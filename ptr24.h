@@ -1,5 +1,9 @@
 #ifndef PTR24_H
 #define PTR24_H
+#define __memx
+#define __flash
+#define strlen_P strlen
+#define strcpy_P strcpy
 #define CM const __memx 
 typedef const __memx void *cmvp;
 typedef struct b3_t {	 // {{{ // === 24-bit pointer type ===
@@ -26,7 +30,7 @@ static inline ptr24_u P(ptr24_u p){	// {{{ Pointer (dereference a return 3Bytes 
 	r.b4.zero=0;
 	return r;
 }	// }}}
-#define F(x) PSTR(x)
+#define F(x) x
 static inline ptr24_u P24u(uint32_t u) { ptr24_u r; r.u32=u; return r;}
 static inline ptr24_u P24p(CM void * p) { ptr24_u r; r.p24=(CM ptr24_u *)p;r.b4.zero=0; return r;}
 static inline uint32_t p24u32(cmvp p) {ptr24_u r; r.p24=p; r.b4.zero=0;return r.u32;}

@@ -2,7 +2,7 @@
 #define DEBUG_H
 
 #include <stdint.h>
-#include <avr/pgmspace.h>
+//#include <avr/pgmspace.h>
 #include <stdbool.h>
 #include "defines.h"
 #include "colors.h"

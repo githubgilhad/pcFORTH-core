@@ -1,5 +1,6 @@
 #ifndef IO_H
 #define IO_H
+#define __memx
 extern char read_char();
 extern void write_char(char c);
 extern void write_charA(char c);

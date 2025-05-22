@@ -5,8 +5,8 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdlib.h>
-#include <avr/pgmspace.h>
-// #include "4.test.0001.def"
+//#include <avr/pgmspace.h>
+#include "itoa.h"
 #include "flags.h"
 #include "ptr24.h"
 #include "io.h"
@@ -26,7 +26,7 @@ extern void jmp_indirect_24(uint32_t p);		// asm.S	call function, which byte_add
  */
 
 _Static_assert(sizeof(uint32_t) == 4, "uint32_t must be 32 bits");
-_Static_assert(sizeof(const __memx void *) == 3, "const __memx void * must be 24 bits");
+// _Static_assert(sizeof(const __memx void *) == 3, "const __memx void * must be 24 bits");
 
 /** {{{ Intro
  * Lets start programming FORTH
@@ -301,7 +301,7 @@ uint32_t get_codeword_addr(xpHead1 h){	 // {{{ // Data_t
 // }}}
 
 void f_docol(); 	// FORWARD
-#define VARfn(name)	void push_var_##name(){TRACE(#name);push(0x80);push((CELL_t)((uint16_t)(&name)));NEXT;}
+#define VARfn(name)	void push_var_##name(){TRACE(#name);push(0x80);push((CELL_t)((uint32_t)(&name)));NEXT;}
 #define VAR(name,value)	CELL_t name=(CELL_t)value;VARfn(name)
 #define CONST(name,value)	void push_const_##name(){TRACE(#name);push(value); NEXT;}
 #define CONST2(name,value)	void push_const_##name(){TRACE(#name);push2(value); NEXT;}
@@ -663,10 +663,10 @@ void f_dot() { 	 // {{{
 	NEXT;
 }	// }}}
 
-void f_number() {	// {{{ (addr n -- val rest ) rest= #neprevedenych znaku
+void f_number() {	// {{{ (Daddr n -- val rest ) rest= #neprevedenych znaku
 	TRACE("NUMBER");
 	CELL_t i=pop();
-	char *buf=(char *)pop();
+	char *buf=(char *)pop2();
 	char *end;CELL_t c=strtoul(buf,&end,BASE);
 	push(c);push(i-(end-buf));
 	NEXT;
@@ -925,8 +925,8 @@ void my_setup(){	// {{{
 	uint8_t len=strlen_P(f_words_name);
 	*(uint8_t*)B3PTR(HERE) =len;HERE++;				// 1B len "words"
 	strcpy_P((char*)B3PTR(HERE),f_words_name); HERE+=len;// len Bytes (+\0, but we overwrite it next step)
-	uint16_t cw=(uint16_t)&f_words;
-	*(uint32_t*)B3PTR(HERE)=cw * 2; HERE+=4;	// codeword
+	uint32_t cw=(uint32_t)&f_words;
+	*(uint32_t*)B3PTR(HERE)=cw /* * 2 */; HERE+=4;	// codeword
 	LAST=temp_h;
 // --------------------------------------------------------------------------------
 	DEBUG_DUMP(B3U32(&RAM[0]),"RAM	");
