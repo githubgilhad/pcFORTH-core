@@ -12,8 +12,8 @@ CXXFLAGS := -O2 -Wall -MMD -I. $(DEFINES)
 LDFLAGS :=
 
 # 32bit code
-CFLAGS   += -m32
-CXXFLAGS += -m32
+CFLAGS   += -m32 -Os -g
+CXXFLAGS += -m32 -Os -g
 LDFLAGS  += -m32
 
 LDFLAGS += -no-pie	# asm relokace
@@ -35,6 +35,7 @@ all: $(TARGET)
 
 $(TARGET): $(OBJS) Makefile
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
+	objdump --disassemble --source --line-numbers --demangle -z --section=.text  --section=.data --section=.bss -M intel $@ >$@.dis
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -94,8 +95,6 @@ version: $(VERSION_HEADER)
 .PHONY: FORCE new_tag version monitor upload_monitor
 # }}}
 
-disassm:	## disassm code
-	find  -name "*.elf" -type f | sed "s/\(.*\)/objdump --disassemble --source --line-numbers --demangle -z --section=.text  --section=.data --section=.bss \1 > \1.dis ; echo '-> \1.dis'/"|bash
 
 asm.S: words.inc
 words.inc: words.4th

@@ -1,6 +1,7 @@
+set disassembly-flavor intel
 
 # Připojení k simavr (běžící na localhost:1234)
-target remote localhost:1234
+# target remote localhost:1234
 
 # Přepnutí na assemblerový pohled (v TUI režimu)
 layout asm
@@ -12,6 +13,7 @@ layout regs
 # Automaticky nastavíme breakpoint na main
 break my_setup
 break f_next
+break f_debug
 
 # Zobrazíme registry a instrukce kolem PC
 display/i $pc
@@ -20,9 +22,10 @@ display/i $pc
 # display $r24
 
 # SRAM ukázka
-display/3bx &IP
-display/3xb &LAST
-display/3xb LAST
+display/4bx $esp
+# display/3bx &IP
+# display/3xb &LAST
+# display/3xb LAST
 
 # Spustit program
-continue
+# continue

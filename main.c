@@ -82,5 +82,5 @@ void loop() {
 }
 int main() {
 	setup();
-	while(1) loop();
+//	while(1) loop();
 }
