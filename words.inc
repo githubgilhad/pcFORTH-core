@@ -130,3 +130,22 @@ DEFWORD w_FORGET,0,"FORGET",f_docol      // 000055 	: FORGET					\ DEFWORD w_for
 	.long w_DoubleAt_cw             
 	.long w_StoreDouble_cw          
 	.long w_exit_cw                 
+
+DEFWORD w_ascii,0,"ascii",f_docol        // 000064 	: ascii 					\ ( -- ) emits 00..FF chars
+	.long w_lit_cw                   // 000065 		LIT \'0x0				\ loop variable
+	.long 0x0                       
+                                         // 000066 							\ BEGIN - target for 0BRANCH
+	.long w_dup_cw                   // 000067 		DUP EMIT 				\ EMIT current char
+	.long w_emit_cw                 
+	.long w_lit_cw                   // 000068 		LIT \'0x01 +				\ i++
+	.long 0x01                      
+	.long w_plus_cw                 
+	.long w_dup_cw                   // 000069 		DUP LIT \'0x0100 - ==0 			\ ? equal to 256?
+	.long w_lit_cw                  
+	.long 0x0100                    
+	.long w_minus_cw                
+	.long w_zero_cw                 
+	.long w_0branch_cw               // 000070 		0BRANCH \'0xFFFFFFD4 			\ if no, repeat (branch to BEGIN)
+	.long 0xFFFFFFD4                
+	.long w_drop_cw                  // 000071 		DROP ;					\ cleanup
+	.long w_exit_cw                 

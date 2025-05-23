@@ -62,3 +62,12 @@
 	DUP2 D@ LAST !D				\	.long w_dup_D_cw, w_DoubleAt_cw, var_LAST_cw, w_StoreDouble_cw
 	HERE D@ !D ;				\	.long var_HERE_cw, w_DoubleAt_cw, w_StoreDouble_cw, w_exit_cw
 
+: ascii 					\ ( -- ) emits 00..FF chars
+	LIT \'0x0				\ loop variable
+						\ BEGIN - target for 0BRANCH
+	DUP EMIT 				\ EMIT current char
+	LIT \'0x01 +				\ i++
+	DUP LIT \'0x0100 - ==0 			\ ? equal to 256?
+	0BRANCH \'0xFFFFFFD4 			\ if no, repeat (branch to BEGIN)
+	DROP ;					\ cleanup
+

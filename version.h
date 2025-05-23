@@ -1,4 +1,4 @@
 #pragma once
-#define VERSION_STRING "0.0.1-5-gba2b578++"
-#define VERSION_COMMIT "ba2b578"
-#define VERSION_MESSAGE "BRANCH offset is in bytes, not in cells"
+#define VERSION_STRING "0.0.1-6-gef8d350++"
+#define VERSION_COMMIT "ef8d350"
+#define VERSION_MESSAGE "Stack <-> Rstack, export, RAM_END ..."

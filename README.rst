@@ -14,9 +14,6 @@ A small Forth-like core for PC, for geting translation of new FORTH words to in-
 
 Based on `memxFORTH-core <https://github.com/githubgilhad/memxFORTH-core>`__
 
-Fork: `NanoHomeFORTH <https://github.com/githubgilhad/NanoHomeFORTH>`__
-
-
 
 License
 -------
