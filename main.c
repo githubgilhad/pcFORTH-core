@@ -6,6 +6,9 @@
 #include <ctype.h>
 #include "version.h"
 
+int a_argc; char **a_argv;
+FILE *file_in=NULL;
+
 static struct termios orig_termios;
 
 void reset_terminal_mode() {
@@ -36,12 +39,30 @@ void set_nonblocking_terminal_mode() {
 	extern void my_loop();
 
 	char read_char() {
-		char c;
-		ssize_t n = read(STDIN_FILENO, &c, 1);
-		if (n > 0) {
-			return c;
-		}
-		return 0;
+		while ((file_in==NULL) && (a_argc))
+			{
+				a_argc--;
+				file_in=fopen(*a_argv,"r");
+				if (file_in==NULL) { perror(*a_argv);};
+				a_argv++;
+			};
+		if(file_in==NULL) {
+			char c;
+			ssize_t n = read(STDIN_FILENO, &c, 1);
+			if (n > 0) { return c;
+			} else { return 0; }
+
+		} else {
+			char c;
+			ssize_t n = fread(&c, 1,1,file_in);
+			if (n > 0) {
+				return c;
+			} else {
+				fclose(file_in);
+				file_in = NULL;
+				return 0;
+			};
+		};
 	}
 
 	void write_char(char c) {
@@ -80,7 +101,10 @@ void loop() {
 	}
 	my_loop();
 }
-int main() {
+int main(int argc, char **argv) {
+	a_argc=argc;
+	a_argv=argv;
+	if (a_argc) {--a_argc; ++a_argv;};
 	setup();
 //	while(1) loop();
 }
