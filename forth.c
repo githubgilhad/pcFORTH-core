@@ -370,13 +370,28 @@ void f_swap() {	// {{{
 	push(b);
 	NEXT;
 }	// }}}
+void f_xor(){	// {{{
+	TRACE("XOR");
+	push(pop()^pop());
+	NEXT;
+}	// }}}
 void f_or(){	// {{{
 	TRACE("OR");
-	push((pop()||pop())?F_TRUE:F_FALSE);
+	push(pop()|pop());
 	NEXT;
 }	// }}}
 void f_and(){	// {{{
 	TRACE("AND");
+	push(pop()&pop());
+	NEXT;
+}	// }}}
+void f_Lor(){	// {{{
+	TRACE("LOR");
+	push((pop()||pop())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_Land(){	// {{{
+	TRACE("LAND");
 	push((pop()&&pop())?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
@@ -415,6 +430,11 @@ void f_div4() {	// {{{
 void f_dup_D() {	// {{{
 	TRACE("DUP2");
 	push2(peek2());
+	NEXT;
+}	// }}}
+void f_rdrop() {	// {{{ // Drop from Rstack
+	INFO("f_rdrop");
+	Rpop();
 	NEXT;
 }	// }}}
 void f_drop_D() {	// {{{
@@ -502,6 +522,36 @@ void f_1minus() {	// {{{ ; decrement TOS by 1
 void f_4minus() {	// {{{ ; decrement TOS by 4
 	TRACE("4-");
 	stck[stack-1]-=4;
+	NEXT;
+}	// }}}
+void f_1Dminus() {	// {{{ // decrement Double TOS by 1
+	INFO("f_1Dminus");
+	push2(pop2()-1);
+	NEXT;
+}	// }}}
+void f_4Dminus() {	// {{{ // decrement Double TOS by 4
+	INFO("f_4Dminus");
+	push2(pop2()-4);
+	NEXT;
+}	// }}}
+void f_1plus() {	// {{{ // increment TOS by 1
+	INFO("f_1plus");
+	push(pop()+1);
+	NEXT;
+}	// }}}
+void f_4plus() {	// {{{ // increment TOS by 4
+	INFO("f_4plus");
+	push(pop()+4);
+	NEXT;
+}	// }}}
+void f_1Dplus() {	// {{{ // increment Double TOS by 1
+	INFO("f_1Dplus");
+	push2(pop2()+1);
+	NEXT;
+}	// }}}
+void f_4Dplus() {	// {{{ // increment Double TOS by 4
+	INFO("f_4Dplus");
+	push2(pop2()+4);
 	NEXT;
 }	// }}}
 void f_Store(){	// {{{ ! ( cell Daddr --  ) store cell at address(Double)
@@ -624,6 +674,22 @@ DOUBLE_t cw2h(DOUBLE_t cw) {	// {{{ codeword address to head address
 void f_cw2h() {	// {{{ ; ( cw -- h ) convert codeword address to head address
 	TRACE("f_cw2h");
 	push2(cw2h(pop2()));
+	NEXT;
+}	// }}}
+void f_h2cw() {	// {{{ // ( h -- cw ) convert head address to codeword address
+	INFO("f_h2cw");
+	DOUBLE_t h=pop2();
+	h+=5;
+	h+=1+B1at(h);
+	push2(h);
+	NEXT;
+}	// }}}
+void f_h2da() {	// {{{ // ( h -- da ) convert head address to data address
+	INFO("f_h2da");
+	DOUBLE_t h=pop2();
+	h+=5;
+	h+=1+B1at(h)+4;
+	push2(h);
 	NEXT;
 }	// }}}
 uint8_t show_name(DOUBLE_t cw) {	// {{{ show name and address from codeword - return flags
@@ -840,9 +906,9 @@ void f_tick() {	// {{{ ; push CW_address of next word to stack (and skip it)
 	};
 	NEXT;
 }	// }}}
-void f_immediate() {	// {{{ ; Addr_of_header IMMEDIATE make the word immediate
+void f_immediate() {	// {{{ ;  IMMEDIATE make the last word immediate
 	TRACE("IMMEDIATE");
-	uint32_t h=pop2();
+	uint32_t h=LAST;
 	*(uint8_t *)B3PTR(h+4) |= FLG_IMMEDIATE;
 	NEXT;
 }	// }}}
@@ -901,6 +967,135 @@ void f_equal() {	// {{{ ; (c1 c2 -- flag ) true if equal
 void f_equalD() {	// {{{ ; (d1 d2 -- flag ) true if equal
 	INFO("f_equalD");
 	push((pop2()==pop2())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_greater() {	// {{{ // (c1 c2 -- flag ) true if greater
+	INFO("f_greater");
+	push((pop()>pop())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_greaterequal() {	// {{{ // (c1 c2 -- flag ) true if greaterequal
+	INFO("f_greaterequal");
+	push((pop()>=pop())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_less() {	// {{{ // (c1 c2 -- flag ) true if less
+	INFO("f_less");
+	push((pop()<pop())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_lessequal() {	// {{{ // (c1 c2 -- flag ) true if lessequal
+	INFO("f_lessequal");
+	push((pop()<=pop())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_greaterD() {	// {{{ // (c1 c2 -- flag ) true if greater
+	INFO("f_greaterD");
+	push((pop2()>pop2())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_greaterequalD() {	// {{{ // (c1 c2 -- flag ) true if greaterequal
+	INFO("f_greaterequalD");
+	push((pop2()>=pop2())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_lessD() {	// {{{ // (c1 c2 -- flag ) true if less
+	INFO("f_lessD");
+	push((pop2()<pop2())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_lessequalD() {	// {{{ // (c1 c2 -- flag ) true if lessequal
+	INFO("f_lessequalD");
+	push((pop2()<=pop2())?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_DIVMOD() {	// {{{ // (c1 c2 -- c1%c2 c1/c2 )
+	INFO("f_DIVMOD");
+	CELL_t c1,c2;
+	c2=pop();
+	c1=pop();
+	push(c1/c2);
+	push(c1%c2);
+	NEXT;
+}	// }}}
+void f_CHAR() {	// {{{ // ( -- C) read one char
+	INFO("f_CHAR");
+	get_word();
+	push(word_buf[0]);
+	NEXT;
+}	// }}}
+	void f_OVER() {	// {{{ // ( c1 c2 -- c1 c2 c1 )
+	INFO("f_OVER");
+	push(peekX(1));
+	NEXT;
+}	// }}}
+	void f_ROT() {	// {{{ // ( c1 c2 c3 -- c3 c1 c2 )
+	INFO("f_ROT");
+	CELL_t c1,c2,c3;
+	c3=pop();
+	c2=pop();
+	c1=pop();
+	push(c3);
+	push(c1);
+	push(c2);
+	NEXT;
+}	// }}}
+	void f_NROT() {	// {{{ // ( c3 c1 c2 -- c1 c2 c3 )
+	INFO("f_NROT");
+	CELL_t c1,c2,c3;
+	c2=pop();
+	c1=pop();
+	c3=pop();
+	push(c3);
+	push(c2);
+	push(c1);
+	NEXT;
+}	// }}}
+	void f_QDUP() {	// {{{ // duplicate top of stack if non-zero
+	INFO("f_QDUP");
+	CELL_t c=peek();
+	if (c) push(c);
+	NEXT;
+}	// }}}
+	void f_QDUPD() {	// {{{ // duplicate Double top of stack if non-zero
+	INFO("f_QDUPD");
+	DOUBLE_t d=peek2();
+	if (d) push2(d);
+	NEXT;
+}	// }}}
+	void f_INVERT() {	// {{{ // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
+	INFO("f_INVERT");
+	push(~pop());
+	NEXT;
+}	// }}}
+	void f_ADDSTORE() {	// {{{ // ( c Daddr -- ) [Daddr] += c
+	INFO("f_ADDSTORE");
+	DOUBLE_t d=pop2();
+	CELL_t c=pop();
+	*(CELL_t *)B3PTR(d)+=c;
+	NEXT;
+}	// }}}
+	void f_SUBSTORE() {	// {{{ // ( c Daddr -- ) [Daddr] -= c
+	INFO("f_SUBSTORE");
+	DOUBLE_t d=pop2();
+	CELL_t c=pop();
+	*(CELL_t *)B3PTR(d)-=c;
+	NEXT;
+}	// }}}
+	void f_CMOVE() {	// {{{ // ( saddr daddr len -- ) CharMove (len) from saddr to daddr
+	INFO("f_CMOVE");
+	CELL_t l=pop();
+	DOUBLE_t d=pop2();
+	DOUBLE_t s=pop2();
+	for(CELL_t i=0;i<l;i++) *(char*)B3PTR(d+i)=B1at(s+i);
+	NEXT;
+}	// }}}
+	void f_TCFA() {	// {{{ // ( h -- Daddr ) Code Field Address (lbl_data)
+	INFO("f_TCFA");
+	DOUBLE_t h=pop2();
+	h+=5;
+	h+=1+B1at(h)+4;
+	push2(h);
 	NEXT;
 }	// }}}
 void f_interpret(){	 // {{{

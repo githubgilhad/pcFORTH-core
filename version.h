@@ -1,4 +1,4 @@
 #pragma once
-#define VERSION_STRING "0.0.1-7-g5161d42++"
-#define VERSION_COMMIT "5161d42"
-#define VERSION_MESSAGE "+ascii"
+#define VERSION_STRING "0.0.1-8-ge8e129c++"
+#define VERSION_COMMIT "e8e129c"
+#define VERSION_MESSAGE "read file arguments"

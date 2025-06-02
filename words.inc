@@ -99,7 +99,7 @@ DEFWORD w_REPEAT,FLG_IMMEDIATE,"REPEAT",f_docol // 000047 	: REPEAT IMMEDIATE 		
 	.long w_DoubleAt_cw             
 	.long w_minus_D_cw              
 	.long w_comma_cw                
-	.long w_swap_D_cw                // 000051 		SWAP2
+	.long w_dup_D_cw                 // 000051 		DUP2
 	.long var_HERE_cw                // 000052 		HERE D@ SWAP2 -D			\ calculate the offset2
 	.long w_DoubleAt_cw             
 	.long w_swap_D_cw               
@@ -112,7 +112,7 @@ DEFWORD w_FORGET,0,"FORGET",f_docol      // 000055 	: FORGET					\ DEFWORD w_for
 	.long w_word_cw                  // 000056 		WORD FIND				\	.long w_word_cw, w_find_cw
 	.long w_find_cw                 
                                          // 000057 	\	DUP2 0x800000 ==D IF EXIT FI		\    check, if the WORD exist 	 \ cannot use IMMEDIATE words in asm.compile
-	.long w_dup_D_cw                 // 000058 		DUP2 0x800000 !=D 
+	.long w_dup_D_cw                 // 000058 		DUP2 0x800000 <>D 
 	.long w_lit2_cw, 0x800000       
 	.long w_notequalD_cw            
 	.long w_0branch_cw               // 000059 		0BRANCH \'3 DROP2 RETURN		\ better check
@@ -140,7 +140,7 @@ DEFWORD w_ascii,0,"ascii",f_docol        // 000064 	: ascii 					\ ( -- ) emits 
 	.long w_lit_cw                   // 000068 		LIT \'0x01 +				\ i++
 	.long 0x01                      
 	.long w_plus_cw                 
-	.long w_dup_cw                   // 000069 		DUP LIT \'0x0100 - ==0 			\ ? equal to 256?
+	.long w_dup_cw                   // 000069 		DUP LIT \'0x0100 - 0= 			\ ? equal to 256?
 	.long w_lit_cw                  
 	.long 0x0100                    
 	.long w_minus_cw                

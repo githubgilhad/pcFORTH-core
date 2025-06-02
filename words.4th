@@ -49,14 +49,14 @@
 	' BRANCH ,				\ compile BRANCH
 	SWAP2					\ get the original offset (from BEGIN)
 	HERE D@ -D ,				\ and compile it after BRANCH
-	SWAP2
+	DUP2
 	HERE D@ SWAP2 -D			\ calculate the offset2
 	SWAP2 !D ;				\ and back-fill it in the original location
 
 : FORGET					\ DEFWORD w_forget,0,"FORGET",f_docol			; forget word (and all after)
 	WORD FIND				\	.long w_word_cw, w_find_cw
 \	DUP2 0x800000 ==D IF EXIT FI		\    check, if the WORD exist 	 \ cannot use IMMEDIATE words in asm.compile
-	DUP2 0x800000 !=D 
+	DUP2 0x800000 <>D 
 	0BRANCH \'3 DROP2 RETURN		\ better check
 	DUP2 HERE !D				\ release RAM
 	DUP2 D@ LAST !D				\	.long w_dup_D_cw, w_DoubleAt_cw, var_LAST_cw, w_StoreDouble_cw
@@ -67,7 +67,7 @@
 						\ BEGIN - target for 0BRANCH
 	DUP EMIT 				\ EMIT current char
 	LIT \'0x01 +				\ i++
-	DUP LIT \'0x0100 - ==0 			\ ? equal to 256?
+	DUP LIT \'0x0100 - 0= 			\ ? equal to 256?
 	0BRANCH \'0xFFFFFFD4 			\ if no, repeat (branch to BEGIN)
 	DROP ;					\ cleanup
 

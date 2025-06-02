@@ -371,6 +371,8 @@ DEFWORD w_lit2,	FLG_ARG,	"LIT2",	f_lit2
 DEFWORD w_Store,	0,	"!",	f_Store
 DEFWORD w_StoreChar,	0,	"!C",	f_StoreChar
 DEFWORD w_StoreDouble,	0,	"!D",	f_StoreDouble
+DEFWORD w_CharStore,	0,	"C!",	f_StoreChar
+DEFWORD w_DoubleStore,	0,	"D!",	f_StoreDouble
 DEFWORD w_At,   	0,	"@",	f_At
 DEFWORD w_CharAt,	0,	"C@",	f_CharAt
 DEFWORD w_DoubleAt,	0,	"D@",	f_DoubleAt
@@ -382,13 +384,17 @@ DEFWORD w_CellAtR,	0,	"@R",	f_CellAtR	// ( -- u ; R: r -- r ) Peek from Rstack
 DEFWORD w_DoubleAtR,	0,	"D@R",	f_DoubleAtR	// ( -- D ; R: r -- r ) Peek from Rstack
 DEFWORD w_StackAddress,	0,	"S?",	f_StackAddress	// ( -- D ) Address, where Stack points
 DEFWORD w_SetStack,	0,	"S!",	f_SetStack	// ( D -- ?? ) Set Stack Address
-DEFWORD w_RStackAddress,	0,	"R?",	f_RStackAddress	// ( -- D ) Address, where Rstack points
+DEFWORD w_RStackAddress,0,	"R?",	f_RStackAddress	// ( -- D ) Address, where Rstack points
 DEFWORD w_SetRStack,	0,	"R!",	f_SetRStack	// ( D -- R: ?? ) Set Rstack Address
 DEFWORD w_dup,  	0,	"DUP",	f_dup
 DEFWORD w_drop, 	0,	"DROP",	f_drop
+DEFWORD w_rdrop, 	0,	"RDROP",	f_rdrop	// Drop from Rstack
 DEFWORD w_swap, 	0,	"SWAP",	f_swap
-DEFWORD w_or,   	0,	"OR",	f_or
-DEFWORD w_and,  	0,	"AND",	f_and
+DEFWORD w_xor,   	0,	"XOR",	f_xor		// bitwise XOR
+DEFWORD w_or,   	0,	"OR",	f_or		// bitwise OR
+DEFWORD w_and,  	0,	"AND",	f_and		// bitwise AND
+DEFWORD w_Lor,   	0,	"||",	f_Lor		// logical OR
+DEFWORD w_Land,  	0,	"&&",	f_Land		// logical AND
 DEFWORD w_plus, 	0,	"+",	f_plus
 DEFWORD w_minus,	0,	"-",	f_minus
 DEFWORD w_times,	0,	"*",	f_times
@@ -410,6 +416,12 @@ DEFWORD w_2Cc,  	0,	"2Cc",	f_2Cc	// 2 C -> cell
 DEFWORD w_4CD,  	0,	"4CD",	f_4CD	// 4 C -> Double
 DEFWORD w_1minus,	0,	"1-",	f_1minus	// decrement TOS by 1
 DEFWORD w_4minus,	0,	"4-",	f_4minus	// decrement TOS by 4
+DEFWORD w_1Dminus,	0,	"1D-",	f_1Dminus	// decrement Double TOS by 1
+DEFWORD w_4Dminus,	0,	"4D-",	f_4Dminus	// decrement Double TOS by 4
+DEFWORD w_1plus,	0,	"1+",	f_1plus		// increment TOS by 1
+DEFWORD w_4plus,	0,	"4+",	f_4plus		// increment TOS by 4
+DEFWORD w_1Dplus,	0,	"1D+",	f_1Dplus	// increment Double TOS by 1
+DEFWORD w_4Dplus,	0,	"4D+",	f_4Dplus	// increment Double TOS by 4
 DEFWORD w_exit, 	0,	"EXIT",	f_exit
 DEFWORD w_return, 	0,	"RETURN",	f_exit	// synonymum EXIT, not detected by show (for exit in middle od WORD)
 DEFWORD w_key,  	0,	"KEY",	f_key
@@ -442,6 +454,10 @@ DEFWORD w_hex,  	0,	"hex",	f_hex
 DEFWORD w_dec,  	0,	"dec",	f_dec
 DEFWORD w_bin,  	0,	"bin",	f_bin
 DEFWORD w_cw2h, 	0,	"cw2h",	f_cw2h		// ( cw -- h ) convert codeword address to head address
+DEFWORD w_h2cw, 	0,	"h2cw",	f_h2cw		// ( h -- cw ) convert head address to codeword address
+DEFWORD w_ToCFA, 	0,	">CFA",	f_h2cw		// ( h -- cw ) convert head address to codeword address
+DEFWORD w_h2da, 	0,	"h2da",	f_h2da		// ( h -- da ) convert head address to data address
+DEFWORD w_ToDFA, 	0,	">DFA",	f_h2da		// ( h -- da ) convert head address to data address
 DEFWORD w_show, 	0,	"show",	f_show		// ( cw -- ) show  try to show definition of WORD addressed by codeword
 DEFWORD w_export, 	0,	"export",	f_export	// ( cw -- ) export  try to export definition of WORD addressed by codeword for forth2inc.py
 DEFCONST1 ff,	0xFF
@@ -453,17 +469,43 @@ DEFWORD w_right_brac,	0,	"]",	f_right_brac			// ] goes to compile mode
 DEFWORD w_find, 	0,	"FIND",	f_find				// WORD FIND return Addr_of_header (or 0 0 )
 DEFWORD w_hidden,	0,	"HIDDEN",	f_hidden		// Addr_of_header HIDE hide/unhide the word
 DEFWORD w_tick, 	0,	"'",	f_tick				// push CW_address of next word to stack (and skip it)
-DEFWORD w_immediate,	0,	"IMMEDIATE",	f_immediate		// Addr_of_header IMMEDIATE make the word immediate
-DEFWORD w_zero, 	0,	"==0",	f_zero				// true if zero
-DEFWORD w_notzero,  	0,	"!=0",	f_notzero			// true if not zero
-DEFWORD w_positive,	0,	">0",	f_positive			// true if positive
-DEFWORD w_positive0,	0,	">=0",	f_positive0			// true if positive or zero
-DEFWORD w_negative,	0,	"<0",	f_negative			// true if negative
-DEFWORD w_negative0,	0,	"<=0",	f_negative0			// true if negative or zero
-DEFWORD w_notequal, 	0,	"!=",	f_notequal			// (c1 c2 -- flag ) true if not equal
-DEFWORD w_notequalD, 	0,	"!=D",	f_notequalD			// (d1 d2 -- flag ) true if not equal
-DEFWORD w_equal, 	0,	"==",	f_equal				// (c1 c2 -- flag ) true if equal
-DEFWORD w_equalD, 	0,	"==D",	f_equalD			// (d1 d2 -- flag ) true if equal
+DEFWORD w_immediate,	FLG_IMMEDIATE,	"IMMEDIATE",	f_immediate		//  IMMEDIATE make the  last word immediate
+DEFWORD w_zero, 	0,	"0=",	f_zero				// true if zero
+DEFWORD w_notzero,  	0,	"0<>",	f_notzero			// true if not zero
+DEFWORD w_positive,	0,	"0>",	f_positive			// true if positive
+DEFWORD w_positive0,	0,	"0>=",	f_positive0			// true if positive or zero
+DEFWORD w_negative,	0,	"0<",	f_negative			// true if negative
+DEFWORD w_negative0,	0,	"0<=",	f_negative0			// true if negative or zero
+DEFWORD w_notequal, 	0,	"<>",	f_notequal			// (c1 c2 -- flag ) true if not equal
+DEFWORD w_notequalD, 	0,	"<>D",	f_notequalD			// (d1 d2 -- flag ) true if not equal
+DEFWORD w_equal, 	0,	"=",	f_equal				// (c1 c2 -- flag ) true if equal
+DEFWORD w_equalD, 	0,	"=D",	f_equalD			// (d1 d2 -- flag ) true if equal
+DEFWORD w_greater, 	0,	">",	f_greater			// (c1 c2 -- flag ) true if greater
+DEFWORD w_greaterequal, 0,	">=",	f_greaterequal			// (c1 c2 -- flag ) true if greaterequal
+DEFWORD w_less, 	0,	"<",	f_less				// (c1 c2 -- flag ) true if less
+DEFWORD w_lessequal, 	0,	"<=",	f_lessequal			// (c1 c2 -- flag ) true if lessequal
+DEFWORD w_greaterD, 	0,	">D",	f_greaterD			// (c1 c2 -- flag ) true if greater
+DEFWORD w_greaterequalD, 0,	">=D",	f_greaterequalD			// (c1 c2 -- flag ) true if greaterequal
+DEFWORD w_lessD, 	0,	"<D",	f_lessD				// (c1 c2 -- flag ) true if less
+DEFWORD w_lessequalD, 	0,	"<=D",	f_lessequalD			// (c1 c2 -- flag ) true if lessequal
+# ------------------------------------------------------------------------ more FORTH words from jonesforth
+DEFWORD w_DIVMOD,	0,	"/MOD",	f_DIVMOD			// ( c1 c2 -- c1%c2 c1/c2 )
+DEFWORD w_CHAR,		0,	"CHAR",	f_CHAR				// ( -- C) read one char
+	DEFWORD w_OVER,	0,	"OVER",	f_OVER			// ( c1 c2 -- c1 c2 c1 )
+	DEFWORD w_ROT, 	0,	"ROT",	f_ROT			// ( c1 c2 c3 -- c3 c1 c2 )
+	DEFWORD w_NROT,	0,	"-ROT",	f_NROT			// ( c3 c1 c2 -- c1 c2 c3 )
+	DEFWORD w_QDUP,	0,	"?DUP",	f_QDUP		// duplicate top of stack if non-zero
+	DEFWORD w_QDUPD,	0,	"?DUP2",	f_QDUPD		// duplicate Double top of stack if non-zero
+	DEFWORD w_INVERT, 	0,	"INVERT",	f_INVERT	 // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
+	DEFWORD w_ADDSTORE, 	0,	"+!",	f_ADDSTORE	// ( c Daddr -- ) [Daddr] += c
+	DEFWORD w_SUBSTORE, 	0,	"-!",	f_SUBSTORE	// ( c Daddr -- ) [Daddr] -= c
+	DEFWORD w_CMOVE, 	0,	"CMOVE",	f_CMOVE	// ( saddr daddr len -- ) CharMove (len) from saddr to daddr
+	DEFWORD w_TCFA, 	0,	">CFA",	f_TCFA		// ( h -- Daddr ) Code Field Address (lbl_data)
+/*
+	DEFWORD w_LITSTRING, 	0,	"LITSTRING",	f_LITSTRING	
+	DEFWORD w_TELL, 	0,	"TELL",	f_TELL	
+	DEFWORD w_EXECUTE, 	0,	"EXECUTE",	f_EXECUTE	
+*/
 # -------------------------------------------------------------------------------- more FORTH words
 
 #include "words.inc"
