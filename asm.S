@@ -366,6 +366,8 @@ DEFCONST2 S0,stck
 DEFCONST2 S_END,stck+STACK_LEN*2	// sizeof(CELL_t)
 DEFCONST2 R0,Rstck
 DEFCONST2 R_END,Rstck+RSTACK_LEN*4	// sizeof(PTR_t)
+DEFCONST1 F_IMMEDIATE, FLG_IMMEDIATE
+DEFCONST1 F_HIDDEN, FLG_HIDDEN
 DEFWORD w_lit,	FLG_ARG,	"LIT",	f_lit
 DEFWORD w_lit2,	FLG_ARG,	"LIT2",	f_lit2
 DEFWORD w_Store,	0,	"!",	f_Store
@@ -401,9 +403,17 @@ DEFWORD w_times,	0,	"*",	f_times
 DEFWORD w_div,  	0,	"/",	f_div
 DEFWORD w_div2, 	0,	"/2",	f_div2
 DEFWORD w_div4, 	0,	"/4",	f_div4
+DEFWORD w_plus21, 	0,	"+21",	f_plus21
+DEFWORD w_minus21,	0,	"-21",	f_minus21
+DEFWORD w_times21,	0,	"*21",	f_times21
+DEFWORD w_div21,  	0,	"/21",	f_div21
 DEFWORD w_dup_D,	0,	"DUP2",	f_dup_D
+DEFWORD w_dup_3,	0,	"DUP3",	f_dup_3
+DEFWORD w_dup_4,	0,	"DUP4",	f_dup_4
 DEFWORD w_drop_D,	0,	"DROP2",	f_drop_D
 DEFWORD w_swap_D,	0,	"SWAP2",	f_swap_D
+DEFWORD w_swap_12,	0,	"SWAP12",	f_swap_12	// ( c d -- d c )
+DEFWORD w_swap_21,	0,	"SWAP21",	f_swap_21	// ( d c -- c d )
 DEFWORD w_plus_D,	0,	"+D",	f_plus_D
 DEFWORD w_minus_D,	0,	"-D",	f_minus_D
 DEFWORD w_times_D,	0,	"*D",	f_times_D
@@ -492,18 +502,22 @@ DEFWORD w_lessequalD, 	0,	"<=D",	f_lessequalD			// (c1 c2 -- flag ) true if less
 DEFWORD w_DIVMOD,	0,	"/MOD",	f_DIVMOD			// ( c1 c2 -- c1%c2 c1/c2 )
 DEFWORD w_CHAR,		0,	"CHAR",	f_CHAR				// ( -- C) read one char
 	DEFWORD w_OVER,	0,	"OVER",	f_OVER			// ( c1 c2 -- c1 c2 c1 )
+	DEFWORD w_OVER2,	0,	"OVER2",	f_OVER2			// ( d1 d2 -- d1 d2 d1 )
+	DEFWORD w_OVER12,	0,	"OVER12",	f_OVER12			// ( c1 d2 -- c1 d2 c1 )
+	DEFWORD w_OVER21,	0,	"OVER21",	f_OVER21			// ( d1 c2 -- d1 c2 d1 )
 	DEFWORD w_ROT, 	0,	"ROT",	f_ROT			// ( c1 c2 c3 -- c3 c1 c2 )
 	DEFWORD w_NROT,	0,	"-ROT",	f_NROT			// ( c3 c1 c2 -- c1 c2 c3 )
+	DEFWORD w_ROT4, 	0,	"ROT4",	f_ROT4			// ( c1 c2 c3 c4 -- c4 c1 c2 c3 )
+	DEFWORD w_NROT4,	0,	"-ROT4",	f_NROT4			// ( c4 c1 c2 c3 -- c1 c2 c3 c4 )
 	DEFWORD w_QDUP,	0,	"?DUP",	f_QDUP		// duplicate top of stack if non-zero
 	DEFWORD w_QDUPD,	0,	"?DUP2",	f_QDUPD		// duplicate Double top of stack if non-zero
 	DEFWORD w_INVERT, 	0,	"INVERT",	f_INVERT	 // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
 	DEFWORD w_ADDSTORE, 	0,	"+!",	f_ADDSTORE	// ( c Daddr -- ) [Daddr] += c
 	DEFWORD w_SUBSTORE, 	0,	"-!",	f_SUBSTORE	// ( c Daddr -- ) [Daddr] -= c
 	DEFWORD w_CMOVE, 	0,	"CMOVE",	f_CMOVE	// ( saddr daddr len -- ) CharMove (len) from saddr to daddr
-	DEFWORD w_TCFA, 	0,	">CFA",	f_TCFA		// ( h -- Daddr ) Code Field Address (lbl_data)
+	DEFWORD w_LITSTRING, 	0,	"LITSTRING",	f_LITSTRING	// ( -- daddr len ) push daddr and len of string on the stach - similar to LIT
+	DEFWORD w_TELL, 	0,	"TELL",	f_TELL			// ( daddr len -- ) prints out string
 /*
-	DEFWORD w_LITSTRING, 	0,	"LITSTRING",	f_LITSTRING	
-	DEFWORD w_TELL, 	0,	"TELL",	f_TELL	
 	DEFWORD w_EXECUTE, 	0,	"EXECUTE",	f_EXECUTE	
 */
 # -------------------------------------------------------------------------------- more FORTH words

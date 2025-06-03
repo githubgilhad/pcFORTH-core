@@ -1,4 +1,4 @@
 #pragma once
-#define VERSION_STRING "0.0.1-8-ge8e129c++"
-#define VERSION_COMMIT "e8e129c"
-#define VERSION_MESSAGE "read file arguments"
+#define VERSION_STRING "0.0.1-9-gb67ac54++"
+#define VERSION_COMMIT "b67ac54"
+#define VERSION_MESSAGE "jonesforth.fth compiling, half works"

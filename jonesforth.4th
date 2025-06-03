@@ -172,15 +172,15 @@ dec
 \		,		\ compile the offset here
 \	;
 \	
-\	\ BEGIN loop-part AGAIN
-\	\	-- compiles to: --> loop-part BRANCH OFFSET
-\	\	where OFFSET points back to the loop-part
-\	\ In other words, an infinite loop which can only be returned from with EXIT
-\	: AGAIN IMMEDIATE
-\		' BRANCH ,	\ compile BRANCH
-\		HERE @ -	\ calculate the offset back
-\		,		\ compile the offset here
-\	;
+\ BEGIN loop-part AGAIN
+\	-- compiles to: --> loop-part BRANCH OFFSET
+\	where OFFSET points back to the loop-part
+\ In other words, an infinite loop which can only be returned from with EXIT
+: AGAIN IMMEDIATE
+	' BRANCH ,	\ compile BRANCH
+	HERE D@ -D	\ calculate the offset back
+	,		\ compile the offset here
+;
 \	
 \	\ BEGIN condition WHILE loop-part REPEAT
 \	\	-- compiles to: --> condition 0BRANCH OFFSET2 loop-part BRANCH OFFSET
@@ -394,7 +394,7 @@ dec
 ;
 
 ( Finally we can define word . in terms of .R, with a trailing space. )
-: . 0 .R SPACE ;
+: .. 0 .R SPACE ;
 
 ( The real U., note the trailing space. )
 : U. U. SPACE ;
@@ -460,14 +460,14 @@ dec
 
 : C, ( C, appends a byte to the current compiled word. )
 	HERE D@ C!	( store the character in the compiled image )
-	0 1 HERE +D D!	( increment HERE pointer by 1 byte )
+	HERE D@ 1 +21 HERE D!	( increment HERE pointer by 1 byte )
 ;
 
 : S" IMMEDIATE		( -- addr len )
-	STATE @ IF	( compiling? )
+	STATE C@ IF	( compiling? )
 		' LITSTRING ,	( compile LITSTRING )
 		HERE D@		( save the address of the length word on the stack )
-		0 ,		( dummy length - we don't know what it is yet )
+		0 0 ,		( dummy length - we don't know what it is yet )
 		BEGIN
 			KEY 		( get next character of the string )
 			DUP '"' <>
@@ -478,8 +478,8 @@ dec
 		DUP2		( get the saved address of the length word )
 		HERE D@ SWAP2 -D	( calculate the length )
 		4D-		( subtract 4 (because we measured from the start of the length word) )
-		SWAP2 !C DROP		( and back-fill the length location )
-		ALIGN		( round up to next multiple of 4 bytes for the remaining code )
+		SWAP2 D! 		( and back-fill the length location )
+\		ALIGN		( round up to next multiple of 4 bytes for the remaining code )
 	ELSE		( immediate mode )
 		HERE D@		( get the start address of the temporary space )
 		BEGIN
@@ -513,7 +513,7 @@ dec
 	enough for you?)
 )
 : ." IMMEDIATE		( -- )
-	STATE @ IF	( compiling? )
+	STATE C@ IF	( compiling? )
 		[COMPILE] S"	( read the string, and compile LITSTRING, etc. )
 		' TELL ,	( compile the final TELL )
 	ELSE
@@ -529,7 +529,7 @@ dec
 		AGAIN
 	THEN
 ;
-WORDS
+
 (
 	CONSTANTS AND VARIABLES ----------------------------------------------------------------------
 
@@ -586,7 +586,7 @@ WORDS
 	Note for people reading the code below: DOCOL is a constant word which we defined in the
 	assembler part which returns the value of the assembler symbol of the same name.
 )
-: CONSTANT
+: CONSTANT ( ??? )
 	WORD		( get the name (the name follows CONSTANT) )
 	CREATE		( make the dictionary entry )
 	DOCOL ,		( append DOCOL (the codeword field of this word) )
@@ -635,7 +635,7 @@ WORDS
 	So now we can define VARIABLE easily in much the same way as CONSTANT above.  Refer to the
 	diagram above to see what the word that this creates will look like.
 )
-: VARIABLE
+: VARIABLE ( ?? )
 	1 CELLS ALLOT	( allocate 1 cell of memory, push the pointer to this memory )
 	WORD CREATE	( make the dictionary entry (the name follows VARIABLE) )
 	DOCOL ,		( append DOCOL (the codeword field of this word) )
@@ -708,7 +708,7 @@ WORDS
 	FIND		( look it up in the dictionary )
 	>DFA		( get a pointer to the first data field (the 'LIT') )
 	4+		( increment to point at the value )
-	STATE @ IF	( compiling? )
+	STATE C@ IF	( compiling? )
 		' LIT ,		( compile LIT )
 		,		( compile the address of the value )
 		' ! ,		( compile ! )
@@ -723,7 +723,7 @@ WORDS
 	FIND		( look it up in the dictionary )
 	>DFA		( get a pointer to the first data field (the 'LIT') )
 	4+		( increment to point at the value )
-	STATE @ IF	( compiling? )
+	STATE C@ IF	( compiling? )
 		' LIT ,		( compile LIT )
 		,		( compile the address of the value )
 		' +! ,		( compile +! )
@@ -739,20 +739,19 @@ WORDS
 
 	For example: LAST @ ID. would print the name of the last word that was defined.
 )
-: ID.
-	4+		( skip over the link pointer )
-	DUP C@		( get the flags/length byte )
-	F_LENMASK AND	( mask out the flags - just want the length )
+: ID.	( daddr -- ) \ get header daddr, prints name from the header
+	4D+ 1D+		( skip over the link pointer and flags )
+	DUP2 C@		( get the length byte )
 
 	BEGIN
 		DUP 0>		( length > 0? )
 	WHILE
-		SWAP 1+		( addr len -- len addr+1 )
-		DUP C@		( len addr -- len addr char | get the next character)
+		SWAP21 1+		( addr len -- len addr+1 )
+		DUP2 C@		( len addr -- len addr char | get the next character)
 		EMIT		( len addr char -- len addr | and print it)
-		SWAP 1-		( len addr -- addr len-1    | subtract one from length )
+		SWAP12 1-		( len addr -- addr len-1    | subtract one from length )
 	REPEAT
-	DROP2		( len addr -- )
+	DROP DROP2		( len addr -- )
 ;
 
 (
@@ -760,15 +759,15 @@ WORDS
 
 	'WORD word FIND ?IMMEDIATE' returns true if 'word' is flagged as immediate.
 )
-: ?HIDDEN
+: ?HIDDEN	(  daddr -- T/F )
 	4+		( skip over the link pointer )
 	C@		( get the flags/length byte )
 	F_HIDDEN AND	( mask the F_HIDDEN flag and return it (as a truth value) )
 ;
-: ?IMMEDIATE
+: ?IMMEDIATE	(  daddr -- T/F )
 	4+		( skip over the link pointer )
 	C@		( get the flags/length byte )
-	F_IMMED AND	( mask the F_IMMED flag and return it (as a truth value) )
+	F_IMMEDIATE AND	( mask the F_IMMEDIATE flag and return it (as a truth value) )
 ;
 
 (
@@ -777,16 +776,16 @@ WORDS
 
 	The implementation simply iterates backwards from LAST using the link pointers.
 )
-: WORDS
-	LAST @	( start at LAST dictionary entry )
+: WORDS		( -- )
+	LAST D@	( start at LAST dictionary entry )
 	BEGIN
-		?DUP		( while link pointer is not null )
+		?DUP2		( while link pointer is not null )
 	WHILE
-		DUP ?HIDDEN NOT IF	( ignore hidden words )
-			DUP ID.		( but if not hidden, print the word )
+		DUP2 ?HIDDEN NOT IF	( ignore hidden words )
+			DUP2 ID.		( but if not hidden, print the word )
 			SPACE
 		THEN
-		@		( dereference the link pointer - go to previous word )
+		D@		( dereference the link pointer - go to previous word )
 	REPEAT
 	CR
 ;
@@ -815,8 +814,8 @@ WORDS
 (
 : FORGET
 	WORD FIND	( find the word, gets the dictionary entry address )
-	DUP @ LAST !	( set LAST to point to the previous word )
-	HERE !		( and store HERE with the dictionary address )
+	DUP2 D@ LAST D!	( set LAST to point to the previous word )
+	HERE D!		( and store HERE with the dictionary address )
 ;
 )
 (
@@ -831,54 +830,54 @@ WORDS
 
 		LAST @ 128 DUMP
 )
-: DUMP		( addr len -- )
-	BASE @ -ROT		( save the current BASE at the bottom of the stack )
+: DUMP		( daddr len -- )
+	BASE C@ -ROT4		( save the current BASE at the bottom of the stack )
 	HEX			( and switch to hexadecimal mode )
 
 	BEGIN
-		?DUP		( while len > 0 )
+		?DUP2		( while len > 0 )
 	WHILE
-		OVER 8 U.R	( print the address )
+		OVER12 8 U.R	( print the address )
 		SPACE
 
 		( print up to 16 words on this line )
-		DUP2		( addr len addr len )
-		1- 15 AND 1+	( addr len addr linelen )
+		DUP3		( daddr len daddr len )
+		1- 15 AND 1+	( daddr len daddr linelen )
 		BEGIN
 			?DUP		( while linelen > 0 )
 		WHILE
-			SWAP		( addr len linelen addr )
-			DUP C@		( addr len linelen addr byte )
+			SWAP21		( daddr len linelen daddr )
+			DUP2 C@		( daddr len linelen daddr byte )
 			2 .R SPACE	( print the byte )
-			1+ SWAP 1-	( addr len linelen addr -- addr len addr+1 linelen-1 )
+			1+ SWAP12 1-	( daddr len linelen daddr -- daddr len daddr+1 linelen-1 )
 		REPEAT
-		DROP		( addr len )
+		DROP		( daddr len )
 
 		( print the ASCII equivalents )
-		DUP2 1- 15 AND 1+ ( addr len addr linelen )
+		DUP3 1- 15 AND 1+ ( daddr len daddr linelen )
 		BEGIN
 			?DUP		( while linelen > 0)
 		WHILE
-			SWAP		( addr len linelen addr )
-			DUP C@		( addr len linelen addr byte )
+			SWAP21		( daddr len linelen daddr )
+			DUP2 C@		( daddr len linelen daddr byte )
 			DUP 32 128 WITHIN IF	( 32 <= c < 128? )
 				EMIT
 			ELSE
 				DROP '.' EMIT
 			THEN
-			1+ SWAP 1-	( addr len linelen addr -- addr len addr+1 linelen-1 )
+			1+ SWAP12 1-	( daddr len linelen daddr -- daddr len daddr+1 linelen-1 )
 		REPEAT
-		DROP		( addr len )
+		DROP		( daddr len )
 		CR
 
-		DUP 1- 15 AND 1+ ( addr len linelen )
-		TUCK		( addr linelen len linelen )
-		-		( addr linelen len-linelen )
-		>R + R>		( addr+linelen len-linelen )
+		DUP 1- 15 AND 1+ ( daddr len linelen )
+		TUCK		( daddr linelen len linelen )
+		-		( daddr linelen len-linelen )
+		>R +21 R>	( daddr+linelen len-linelen )
 	REPEAT
 
 	DROP			( restore stack )
-	BASE !			( restore saved BASE )
+	BASE C!			( restore saved BASE )
 ;
 
 (
@@ -990,20 +989,20 @@ WORDS
 
 	This word returns 0 if it doesn't find a match.
 )
-: CFA>
-	LAST @	( start at LAST dictionary entry )
+: CFA>	( daddr -- daddr )
+	LAST D@	( start at LAST dictionary entry )
 	BEGIN
-		?DUP		( while link pointer is not null )
+		?DUP2		( while link pointer is not null )
 	WHILE
-		DUP2 SWAP	( cfa curr curr cfa )
-		< IF		( current dictionary entry < cfa? )
+		DUP4 SWAP2	( cfa curr curr cfa )
+		<D IF		( current dictionary entry < cfa? )
 			NIP		( leave curr dictionary entry on the stack )
 			EXIT
 		THEN
-		@		( follow link pointer back )
+		D@		( follow link pointer back )
 	REPEAT
-	DROP		( restore stack )
-	0		( sorry, nothing found )
+	DROP2		( restore stack )
+	0 0		( sorry, nothing found )
 ;
 
 (
@@ -1022,7 +1021,7 @@ WORDS
 	With this information we can have a go at decompiling the word.  We need to
 	recognise "meta-words" like LIT, LITSTRING, BRANCH, etc. and treat those separately.
 )
-: SEE
+: SEE ( -- )
 	WORD FIND	( find the dictionary entry to decompile )
 
 	( Now we search again, looking for the next word in the dictionary.  This gives us
@@ -1108,7 +1107,7 @@ WORDS
 
 	DROP2		( restore stack )
 ;
-
+(
 (
 	EXECUTION TOKENS ----------------------------------------------------------------------
 
@@ -1399,7 +1398,7 @@ WORDS
 	implementation just a modified S".
 )
 : Z" IMMEDIATE
-	STATE @ IF	( compiling? )
+	STATE C@ IF	( compiling? )
 		' LITSTRING ,	( compile LITSTRING )
 		HERE D@		( save the address of the length word on the stack )
 		0 ,		( dummy length - we don't know what it is yet )
@@ -1789,3 +1788,4 @@ HIDE =NEXT
 
 WELCOME
 HIDE WELCOME
+)

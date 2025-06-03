@@ -432,6 +432,18 @@ void f_dup_D() {	// {{{
 	push2(peek2());
 	NEXT;
 }	// }}}
+void f_dup_3() {	// {{{
+	TRACE("DUP3");
+	push2(peek2X(1));
+	push(peekX(2));
+	NEXT;
+}	// }}}
+void f_dup_4() {	// {{{
+	TRACE("DUP4");
+	push2(peek2X(2));
+	push2(peek2X(2));
+	NEXT;
+}	// }}}
 void f_rdrop() {	// {{{ // Drop from Rstack
 	INFO("f_rdrop");
 	Rpop();
@@ -448,6 +460,22 @@ void f_swap_D() {	// {{{
 	DOUBLE_t b=pop2();
 	push2(a);
 	push2(b);
+	NEXT;
+}	// }}}
+void f_swap_12() {	// {{{ // ( c d -- d c )
+	INFO("f_swap_12");
+	DOUBLE_t d=pop2();
+	CELL_t  c=pop();
+	push2(d);
+	push(c);
+	NEXT;
+}	// }}}
+void f_swap_21() {	// {{{ // ( d c -- c d )
+	INFO("f_swap_21");
+	CELL_t  c=pop();
+	DOUBLE_t d=pop2();
+	push(c);
+	push2(d);
 	NEXT;
 }	// }}}
 void f_plus_D() {	// {{{
@@ -480,6 +508,34 @@ void f_div2_D() {	// {{{
 void f_div4_D() {	// {{{
 	TRACE("/4D");
 	push2(pop2()/4);
+	NEXT;
+}	// }}}
+void f_plus21() {	// {{{ 
+	INFO("f_plus21");
+	CELL_t  c=pop();
+	DOUBLE_t d=pop2();
+	push2(d+c);
+	NEXT;
+}	// }}}
+void f_minus21() {	// {{{ 
+	INFO("f_minus21");
+	CELL_t  c=pop();
+	DOUBLE_t d=pop2();
+	push2(d-c);
+	NEXT;
+}	// }}}
+void f_times21() {	// {{{ 
+	INFO("f_times21");
+	CELL_t  c=pop();
+	DOUBLE_t d=pop2();
+	push2(d*c);
+	NEXT;
+}	// }}}
+void f_div21() {	// {{{ 
+	INFO("f_div21");
+	CELL_t  c=pop();
+	DOUBLE_t d=pop2();
+	push2(d/c);
 	NEXT;
 }	// }}}
 void f_c2C() {	// {{{ ; cell -> 2 C
@@ -951,12 +1007,12 @@ void f_negative0() {	// {{{ ; true if negative or zero
 }	// }}}
 void f_notequal() {	// {{{ ; (c1 c2 -- flag ) true if notequal
 	INFO("f_notequal");
-	push((pop()==pop())?F_TRUE:F_FALSE);
+	push((pop()!=pop())?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_notequalD() {	// {{{ ; (d1 d2 -- flag ) true if notequal
 	INFO("f_notequalD");
-	push((pop2()==pop2())?F_TRUE:F_FALSE);
+	push((pop2()!=pop2())?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_equal() {	// {{{ ; (c1 c2 -- flag ) true if equal
@@ -1029,6 +1085,22 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	push(peekX(1));
 	NEXT;
 }	// }}}
+	void f_OVER2() {	// {{{ // ( d1 d2 -- d1 d2 d1 )
+	INFO("f_OVER2");
+	push2(peek2X(1));
+	NEXT;
+}	// }}}
+	void f_OVER12() {	// {{{ // ( c1 d2 -- c1 d2 c1 )
+	INFO("f_OVER12");
+	push(peekX(2));
+	NEXT;
+}	// }}}
+	void f_OVER21() {	// {{{ // ( d1 c2 -- d1 c2 d1 )
+	INFO("f_OVER21");
+	push(peekX(2));
+	push(peekX(2));
+	NEXT;
+}	// }}}
 	void f_ROT() {	// {{{ // ( c1 c2 c3 -- c3 c1 c2 )
 	INFO("f_ROT");
 	CELL_t c1,c2,c3;
@@ -1046,9 +1118,35 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	c2=pop();
 	c1=pop();
 	c3=pop();
-	push(c3);
-	push(c2);
 	push(c1);
+	push(c2);
+	push(c3);
+	NEXT;
+}	// }}}
+	void f_ROT4() {	// {{{ // ( c1 c2 c3 c4 -- c4 c1 c2 c3 )
+	INFO("f_ROT4");
+	CELL_t c1,c2,c3,c4;
+	c4=pop();
+	c3=pop();
+	c2=pop();
+	c1=pop();
+	push(c4);
+	push(c1);
+	push(c2);
+	push(c3);
+	NEXT;
+}	// }}}
+	void f_NROT4() {	// {{{ // ( c4 c1 c2 c3 -- c1 c2 c3 c4 )
+	INFO("f_NROT4");
+	CELL_t c1,c2,c3,c4;
+	c3=pop();
+	c2=pop();
+	c1=pop();
+	c4=pop();
+	push(c1);
+	push(c2);
+	push(c3);
+	push(c4);
 	NEXT;
 }	// }}}
 	void f_QDUP() {	// {{{ // duplicate top of stack if non-zero
@@ -1090,12 +1188,20 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	for(CELL_t i=0;i<l;i++) *(char*)B3PTR(d+i)=B1at(s+i);
 	NEXT;
 }	// }}}
-	void f_TCFA() {	// {{{ // ( h -- Daddr ) Code Field Address (lbl_data)
-	INFO("f_TCFA");
-	DOUBLE_t h=pop2();
-	h+=5;
-	h+=1+B1at(h)+4;
-	push2(h);
+	void f_LITSTRING() {	// {{{ // ( -- daddr len ) push daddr and len of string on the stach - similar to LIT
+	INFO("f_LITSTRING");
+	CELL_t len=B2at(IP);
+	IP+=4;
+	push2(IP);
+	push(len);
+	IP+=len;
+	NEXT;
+}	// }}}
+	void f_TELL() {	// {{{ // ( daddr len -- ) prints out string
+	INFO("f_TELL");
+	CELL_t len = pop();
+	DOUBLE_t addr=pop2();
+	for (uint32_t i=0; i<len; ++i) { write_char(B1at(addr+i));};
 	NEXT;
 }	// }}}
 void f_interpret(){	 // {{{
