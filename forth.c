@@ -1,4 +1,4 @@
-/* vim: set ft=cpp noexpandtab fileencoding=utf-8 nomodified wrap textwidth=0 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\:|- list: tabstop=8 linebreak showbreak=»\   */
+/* vim: set ft=cpp showbreak=»\  noexpandtab fileencoding=utf-8 nomodified wrap textwidth=0 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd list: lcs=tab\:|- tabstop=8 linebreak  */
 // ,,g = gcc, exactly one space after "set"
 #include <stdint.h>
 #include <stddef.h>
@@ -103,7 +103,9 @@ typedef const __memx head1_t	*xpHead1;	// 3B pointer to head1 "somewhere"
 
 typedef uint32_t PTR_t; 	// universal "3B pointer" to any data "somewhere" - use B1at, B3at for dereferencing
 typedef uint16_t CELL_t;	// cell on data stack 2B
+typedef int16_t S_CELL_t;	// signed cell on data stack 2B
 typedef uint32_t DOUBLE_t;	// 2 cell on data stack 4B
+typedef int32_t S_DOUBLE_t;	// signed 2 cell on data stack 4B
 typedef uint8_t  BYTE_t;	// something for pointers to points to
 
 PTR_t		IP;	// pointer to element of data[], which should be next
@@ -445,7 +447,7 @@ void f_dup_4() {	// {{{
 	NEXT;
 }	// }}}
 void f_rdrop() {	// {{{ // Drop from Rstack
-	INFO("f_rdrop");
+	TRACE("RDROP");
 	Rpop();
 	NEXT;
 }	// }}}
@@ -463,7 +465,7 @@ void f_swap_D() {	// {{{
 	NEXT;
 }	// }}}
 void f_swap_12() {	// {{{ // ( c d -- d c )
-	INFO("f_swap_12");
+	TRACE("SWAP12");
 	DOUBLE_t d=pop2();
 	CELL_t  c=pop();
 	push2(d);
@@ -471,7 +473,7 @@ void f_swap_12() {	// {{{ // ( c d -- d c )
 	NEXT;
 }	// }}}
 void f_swap_21() {	// {{{ // ( d c -- c d )
-	INFO("f_swap_21");
+	TRACE("SWAP21");
 	CELL_t  c=pop();
 	DOUBLE_t d=pop2();
 	push(c);
@@ -511,28 +513,28 @@ void f_div4_D() {	// {{{
 	NEXT;
 }	// }}}
 void f_plus21() {	// {{{ 
-	INFO("f_plus21");
+	TRACE("+21");
 	CELL_t  c=pop();
 	DOUBLE_t d=pop2();
 	push2(d+c);
 	NEXT;
 }	// }}}
 void f_minus21() {	// {{{ 
-	INFO("f_minus21");
+	TRACE("-21");
 	CELL_t  c=pop();
 	DOUBLE_t d=pop2();
 	push2(d-c);
 	NEXT;
 }	// }}}
 void f_times21() {	// {{{ 
-	INFO("f_times21");
+	TRACE("*21");
 	CELL_t  c=pop();
 	DOUBLE_t d=pop2();
 	push2(d*c);
 	NEXT;
 }	// }}}
 void f_div21() {	// {{{ 
-	INFO("f_div21");
+	TRACE("/21");
 	CELL_t  c=pop();
 	DOUBLE_t d=pop2();
 	push2(d/c);
@@ -581,32 +583,32 @@ void f_4minus() {	// {{{ ; decrement TOS by 4
 	NEXT;
 }	// }}}
 void f_1Dminus() {	// {{{ // decrement Double TOS by 1
-	INFO("f_1Dminus");
+	TRACE("1D-");
 	push2(pop2()-1);
 	NEXT;
 }	// }}}
 void f_4Dminus() {	// {{{ // decrement Double TOS by 4
-	INFO("f_4Dminus");
+	TRACE("4D-");
 	push2(pop2()-4);
 	NEXT;
 }	// }}}
 void f_1plus() {	// {{{ // increment TOS by 1
-	INFO("f_1plus");
+	TRACE("1+");
 	push(pop()+1);
 	NEXT;
 }	// }}}
 void f_4plus() {	// {{{ // increment TOS by 4
-	INFO("f_4plus");
+	TRACE("4+");
 	push(pop()+4);
 	NEXT;
 }	// }}}
 void f_1Dplus() {	// {{{ // increment Double TOS by 1
-	INFO("f_1Dplus");
+	TRACE("1D+");
 	push2(pop2()+1);
 	NEXT;
 }	// }}}
 void f_4Dplus() {	// {{{ // increment Double TOS by 4
-	INFO("f_4Dplus");
+	TRACE("4D+");
 	push2(pop2()+4);
 	NEXT;
 }	// }}}
@@ -645,42 +647,42 @@ void f_DoubleAt(){	// {{{ D@ ( Daddr -- D ) Double at address(Double)
 	NEXT;
 }	// }}}
 void f_ToR() {	// {{{ // ( u -- ; R: -- r ) Move to Rstack
-	INFO("f_ToR");
+	TRACE(">R");
 	Rpush(pop());
 	NEXT;
 }	// }}}
 void f_DoubleToR() {	// {{{ // ( D -- ; R: -- r ) Move Double to Rstack (still one position on R)
-	INFO("f_DoubleToR");
+	TRACE("D>R");
 	Rpush(pop2());
 	NEXT;
 }	// }}}
 void f_FromR() {	// {{{ // ( -- u ; R: r -- ) Move from Rstack
-	INFO("f_FromR");
+	TRACE("R>");
 	push(Rpop());
 	NEXT;
 }	// }}}
 void f_DoubleFromR() {	// {{{ // ( -- D ; R: r -- ) Move Double from Rstack (still one position on R)
-	INFO("f_DoubleFromR");
+	TRACE("R>D");
 	push2(Rpop());
 	NEXT;
 }	// }}}
 void f_CellAtR() {	// {{{ // ( -- u ; R: r -- r ) Peek from Rstack
-	INFO("f_CellAtR");
+	TRACE("@R");
 	push(Rpeek());
 	NEXT;
 }	// }}}
 void f_DoubleAtR() {	// {{{ // ( -- D ; R: r -- r ) Peek from Rstack
-	INFO("f_DoubleAtR");
+	TRACE("D@R");
 	push2(Rpeek());
 	NEXT;
 }	// }}}
 void f_StackAddress() {	// {{{ // ( -- D ) Address, where Stack points
-	INFO("f_StackAddress");
+	TRACE("S?");
 	push2(B3U32(&stck[stack]));
 	NEXT;
 }	// }}}
 void f_SetStack() {	// {{{ // ( D -- ?? ) Set Stack Address
-	INFO("f_SetStack");
+	TRACE("S!");
 	int32_t S=pop2()-B3U32(&stck[0]);
 	if ((S<0) || (S>STACK_LEN*sizeof(stck[0]))) { ERROR("Out of stack area"); NEXT; return;};
 	int32_t s=S/sizeof(stck[0]);
@@ -689,12 +691,12 @@ void f_SetStack() {	// {{{ // ( D -- ?? ) Set Stack Address
 	NEXT;
 }	// }}}
 void f_RStackAddress() {	// {{{ // ( -- D ) Address, where Rstack points
-	INFO("f_RStackAddress");
+	TRACE("R?");
 	push2(B3U32(&Rstck[Rstack]));
 	NEXT;
 }	// }}}
 void f_SetRStack() {	// {{{ // ( D -- R: ?? ) Set Rstack Address
-	INFO("f_SetRStack");
+	TRACE("R!");
 	int32_t S=pop2()-B3U32(&Rstck[0]);
 	if ((S<0) || (S>RSTACK_LEN*sizeof(Rstck[0]))) { ERROR("Out of Rstack area"); NEXT; return;};
 	int32_t s=S/sizeof(Rstck[0]);
@@ -733,7 +735,7 @@ void f_cw2h() {	// {{{ ; ( cw -- h ) convert codeword address to head address
 	NEXT;
 }	// }}}
 void f_h2cw() {	// {{{ // ( h -- cw ) convert head address to codeword address
-	INFO("f_h2cw");
+	TRACE("h2cw");
 	DOUBLE_t h=pop2();
 	h+=5;
 	h+=1+B1at(h);
@@ -741,7 +743,7 @@ void f_h2cw() {	// {{{ // ( h -- cw ) convert head address to codeword address
 	NEXT;
 }	// }}}
 void f_h2da() {	// {{{ // ( h -- da ) convert head address to data address
-	INFO("f_h2da");
+	TRACE("h2da");
 	DOUBLE_t h=pop2();
 	h+=5;
 	h+=1+B1at(h)+4;
@@ -875,8 +877,7 @@ void f_word() {	 // {{{ Put address and size of buff to stack
 	NEXT;
 }	// }}}
 void f_docol() {	// {{{
-	INFO("f_docol");
-//	track("f_docol ");
+	TRACE("docol");
 // ERROR("Press ANY key to continue");wait_for_char();
 	Rpush(IP);
 	IP=DT+4;	// README: DT points to 4B codeword, so next address is DT+4B and now it is on Data[0] in the target header
@@ -885,24 +886,24 @@ void f_docol() {	// {{{
 	NEXT;
 }	// }}}
 void f_exit(){	// {{{
-	INFO("f_exit");
+	TRACE("EXIT");
 	IP=Rpop();
 	NEXT;
 }	// }}}
 void f_lit(){	// {{{ README: LIT takes the next 4B pointer as 2B integer, ignores the top byte. This is done for taking the same 4B alingment in data
-	INFO("f_lit");
+	TRACE("LIT");
 	push(B2at(IP));
 	IP+=4;
 	NEXT;
 }	// }}}
 void f_lit2(){	// {{{ README: LIT takes the next 4B pointer as 4B integer. This is done for taking the same 4B alingment in data
-	INFO("f_lit2");
+	TRACE("LIT2");
 	push2(B4at(IP));
 	IP+=4;
 	NEXT;
 }	// }}}
 void comma(uint32_t d) {	// {{{
-	INFO("comma");
+	TRACE(",");
 	*(uint32_t*)B3PTR(HERE)=d;
 	HERE+=4;
 }	// }}}
@@ -987,122 +988,163 @@ void f_notzero() {	// {{{ ; true if not zero
 }	// }}}
 void f_positive() {	// {{{ ; true if positive
 	TRACE(">0");
-	push((pop()>0)?F_TRUE:F_FALSE);
+	push(((S_CELL_t)pop()>0)?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_positive0() {	// {{{ ; true if positive or zero
 	TRACE(">=0");
-	push((pop()>=0)?F_TRUE:F_FALSE);
+	push(((S_CELL_t)pop()>=0)?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_negative() {	// {{{ ; true if negative
 	TRACE("<0");
-	push((pop()<0)?F_TRUE:F_FALSE);
+	push(((S_CELL_t)pop()<0)?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_negative0() {	// {{{ ; true if negative or zero
 	TRACE("<=0");
-	push((pop()<=0)?F_TRUE:F_FALSE);
+	push(((S_CELL_t)pop()<=0)?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_notequal() {	// {{{ ; (c1 c2 -- flag ) true if notequal
-	INFO("f_notequal");
+	TRACE("<>");
 	push((pop()!=pop())?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_notequalD() {	// {{{ ; (d1 d2 -- flag ) true if notequal
-	INFO("f_notequalD");
+	TRACE("<>D");
 	push((pop2()!=pop2())?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_equal() {	// {{{ ; (c1 c2 -- flag ) true if equal
-	INFO("f_equal");
+	TRACE("=");
 	push((pop()==pop())?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_equalD() {	// {{{ ; (d1 d2 -- flag ) true if equal
-	INFO("f_equalD");
+	TRACE("=D");
 	push((pop2()==pop2())?F_TRUE:F_FALSE);
 	NEXT;
 }	// }}}
 void f_greater() {	// {{{ // (c1 c2 -- flag ) true if greater
-	INFO("f_greater");
-	push((pop()>pop())?F_TRUE:F_FALSE);
-	NEXT;
-}	// }}}
-void f_greaterequal() {	// {{{ // (c1 c2 -- flag ) true if greaterequal
-	INFO("f_greaterequal");
-	push((pop()>=pop())?F_TRUE:F_FALSE);
-	NEXT;
-}	// }}}
-void f_less() {	// {{{ // (c1 c2 -- flag ) true if less
-	INFO("f_less");
-	push((pop()<pop())?F_TRUE:F_FALSE);
-	NEXT;
-}	// }}}
-void f_lessequal() {	// {{{ // (c1 c2 -- flag ) true if lessequal
-	INFO("f_lessequal");
-	push((pop()<=pop())?F_TRUE:F_FALSE);
-	NEXT;
-}	// }}}
-void f_greaterD() {	// {{{ // (c1 c2 -- flag ) true if greater
-	INFO("f_greaterD");
-	push((pop2()>pop2())?F_TRUE:F_FALSE);
-	NEXT;
-}	// }}}
-void f_greaterequalD() {	// {{{ // (c1 c2 -- flag ) true if greaterequal
-	INFO("f_greaterequalD");
-	push((pop2()>=pop2())?F_TRUE:F_FALSE);
-	NEXT;
-}	// }}}
-void f_lessD() {	// {{{ // (c1 c2 -- flag ) true if less
-	INFO("f_lessD");
-	push((pop2()<pop2())?F_TRUE:F_FALSE);
-	NEXT;
-}	// }}}
-void f_lessequalD() {	// {{{ // (c1 c2 -- flag ) true if lessequal
-	INFO("f_lessequalD");
-	push((pop2()<=pop2())?F_TRUE:F_FALSE);
-	NEXT;
-}	// }}}
-void f_DIVMOD() {	// {{{ // (c1 c2 -- c1%c2 c1/c2 )
-	INFO("f_DIVMOD");
+	TRACE(">");
 	CELL_t c1,c2;
 	c2=pop();
 	c1=pop();
-	push(c1/c2);
+	push((c1>c2)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_greaterequal() {	// {{{ // (c1 c2 -- flag ) true if greaterequal
+	TRACE(">=");
+	CELL_t c1,c2;
+	c2=pop();
+	c1=pop();
+	push((c1>=c2)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_less() {	// {{{ // (c1 c2 -- flag ) true if less
+	TRACE("<");
+	CELL_t c1,c2;
+	c2=pop();
+	c1=pop();
+	push((c1<c2)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_lessequal() {	// {{{ // (c1 c2 -- flag ) true if lessequal
+	TRACE("<=");
+	CELL_t c1,c2;
+	c2=pop();
+	c1=pop();
+	push((c1<=c2)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_greaterD() {	// {{{ // (c1 c2 -- flag ) true if greater
+	TRACE(">D");
+	DOUBLE_t d1,d2;
+	d2=pop2();
+	d1=pop2();
+	push((d1>d2)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_greaterequalD() {	// {{{ // (c1 c2 -- flag ) true if greaterequal
+	TRACE(">=D");
+	DOUBLE_t d1,d2;
+	d2=pop2();
+	d1=pop2();
+	push((d1>=d2)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_lessD() {	// {{{ // (c1 c2 -- flag ) true if less
+	TRACE("<D");
+	DOUBLE_t d1,d2;
+	d2=pop2();
+	d1=pop2();
+	push((d1<d2)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_lessequalD() {	// {{{ // (d1 d2 -- flag ) true if lessequal
+	TRACE("<=D");
+	DOUBLE_t d1,d2;
+	d2=pop2();
+	d1=pop2();
+	push((d1<=d2)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_notnull() {	// {{{ // (daddr -- flag ) true if daddr is not NULL
+	TRACE("NOTNULL");
+	DOUBLE_t d=pop2();
+	push((d & ~0x800000)?F_TRUE:F_FALSE);
+	NEXT;
+}	// }}}
+void f_DIVMOD() {	// {{{ // (c1 c2 -- c1/c2 c1%c2 )
+	TRACE("/MOD");
+	CELL_t c1,c2;
+	c2=pop();
+	c1=pop();
 	push(c1%c2);
+	push(c1/c2);
 	NEXT;
 }	// }}}
 void f_CHAR() {	// {{{ // ( -- C) read one char
-	INFO("f_CHAR");
+	TRACE("CHAR");
 	get_word();
 	push(word_buf[0]);
 	NEXT;
 }	// }}}
 	void f_OVER() {	// {{{ // ( c1 c2 -- c1 c2 c1 )
-	INFO("f_OVER");
+	TRACE("OVER");
 	push(peekX(1));
 	NEXT;
 }	// }}}
 	void f_OVER2() {	// {{{ // ( d1 d2 -- d1 d2 d1 )
-	INFO("f_OVER2");
-	push2(peek2X(1));
+	TRACE("OVER2");
+	push2(peek2X(2));
 	NEXT;
 }	// }}}
 	void f_OVER12() {	// {{{ // ( c1 d2 -- c1 d2 c1 )
-	INFO("f_OVER12");
+	TRACE("OVER12");
 	push(peekX(2));
 	NEXT;
 }	// }}}
 	void f_OVER21() {	// {{{ // ( d1 c2 -- d1 c2 d1 )
-	INFO("f_OVER21");
+	TRACE("OVER21");
 	push(peekX(2));
 	push(peekX(2));
 	NEXT;
 }	// }}}
-	void f_ROT() {	// {{{ // ( c1 c2 c3 -- c3 c1 c2 )
-	INFO("f_ROT");
+	void f_ROT() {	// {{{ // ( c1 c2 c3 --  c2 c3 c1 )
+	TRACE("ROT");
+	CELL_t c1,c2,c3;
+	c3=pop();
+	c2=pop();
+	c1=pop();
+	push(c2);
+	push(c3);
+	push(c1);
+	NEXT;
+}	// }}}
+	void f_NROT() {	// {{{ // ( c1 c2 c3 -- c3 c1 c2 )
+	TRACE("NROT");
 	CELL_t c1,c2,c3;
 	c3=pop();
 	c2=pop();
@@ -1112,19 +1154,21 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	push(c2);
 	NEXT;
 }	// }}}
-	void f_NROT() {	// {{{ // ( c3 c1 c2 -- c1 c2 c3 )
-	INFO("f_NROT");
-	CELL_t c1,c2,c3;
+	void f_ROT4() {	// {{{ // ( c1 c2 c3 c4 --  c2 c3 c4 c1 )
+	TRACE("ROT4");
+	CELL_t c1,c2,c3,c4;
+	c4=pop();
+	c3=pop();
 	c2=pop();
 	c1=pop();
-	c3=pop();
-	push(c1);
 	push(c2);
 	push(c3);
+	push(c4);
+	push(c1);
 	NEXT;
 }	// }}}
-	void f_ROT4() {	// {{{ // ( c1 c2 c3 c4 -- c4 c1 c2 c3 )
-	INFO("f_ROT4");
+	void f_NROT4() {	// {{{ // ( c1 c2 c3 c4 -- c4 c1 c2 c3 )
+	TRACE("NROT4");
 	CELL_t c1,c2,c3,c4;
 	c4=pop();
 	c3=pop();
@@ -1134,54 +1178,41 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	push(c1);
 	push(c2);
 	push(c3);
-	NEXT;
-}	// }}}
-	void f_NROT4() {	// {{{ // ( c4 c1 c2 c3 -- c1 c2 c3 c4 )
-	INFO("f_NROT4");
-	CELL_t c1,c2,c3,c4;
-	c3=pop();
-	c2=pop();
-	c1=pop();
-	c4=pop();
-	push(c1);
-	push(c2);
-	push(c3);
-	push(c4);
 	NEXT;
 }	// }}}
 	void f_QDUP() {	// {{{ // duplicate top of stack if non-zero
-	INFO("f_QDUP");
+	TRACE("?DUP");
 	CELL_t c=peek();
 	if (c) push(c);
 	NEXT;
 }	// }}}
 	void f_QDUPD() {	// {{{ // duplicate Double top of stack if non-zero
-	INFO("f_QDUPD");
+	TRACE("?DUP2");
 	DOUBLE_t d=peek2();
 	if (d) push2(d);
 	NEXT;
 }	// }}}
 	void f_INVERT() {	// {{{ // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
-	INFO("f_INVERT");
+	TRACE("INVERT");
 	push(~pop());
 	NEXT;
 }	// }}}
 	void f_ADDSTORE() {	// {{{ // ( c Daddr -- ) [Daddr] += c
-	INFO("f_ADDSTORE");
+	TRACE("+!");
 	DOUBLE_t d=pop2();
 	CELL_t c=pop();
 	*(CELL_t *)B3PTR(d)+=c;
 	NEXT;
 }	// }}}
 	void f_SUBSTORE() {	// {{{ // ( c Daddr -- ) [Daddr] -= c
-	INFO("f_SUBSTORE");
+	TRACE("-!");
 	DOUBLE_t d=pop2();
 	CELL_t c=pop();
 	*(CELL_t *)B3PTR(d)-=c;
 	NEXT;
 }	// }}}
 	void f_CMOVE() {	// {{{ // ( saddr daddr len -- ) CharMove (len) from saddr to daddr
-	INFO("f_CMOVE");
+	TRACE("CMOVE");
 	CELL_t l=pop();
 	DOUBLE_t d=pop2();
 	DOUBLE_t s=pop2();
@@ -1189,7 +1220,7 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	NEXT;
 }	// }}}
 	void f_LITSTRING() {	// {{{ // ( -- daddr len ) push daddr and len of string on the stach - similar to LIT
-	INFO("f_LITSTRING");
+	TRACE("LITSTRING");
 	CELL_t len=B2at(IP);
 	IP+=4;
 	push2(IP);
@@ -1198,14 +1229,14 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	NEXT;
 }	// }}}
 	void f_TELL() {	// {{{ // ( daddr len -- ) prints out string
-	INFO("f_TELL");
+	TRACE("TELL");
 	CELL_t len = pop();
 	DOUBLE_t addr=pop2();
 	for (uint32_t i=0; i<len; ++i) { write_char(B1at(addr+i));};
 	NEXT;
 }	// }}}
 void f_interpret(){	 // {{{
-	INFO("f_interpret");
+	TRACE("INTERPRET");
 //	write_str(F("\r\n"));
 	DEBUG_DUMP(B3U32(&Rstck[Rstack]),("Rstack	"));
 	DEBUG_DUMP(B3U32(&stck[stack]),("stack	"));
@@ -1258,12 +1289,12 @@ void f_debug(void) {	// {{{ // === f_debug: return from FOTH or what ===
 	// f_next();	// No, simply no, return back to caler ...
 }	// }}}
 void f_doconst() {	// {{{
-	INFO("f_doconst");
+	TRACE("DOCONST");
 	push(B4at(DT+4));
 	NEXT;
 }	// }}}
 void f_doconst2() {	// {{{
-	INFO("f_doconst2");
+	TRACE("DOCONST2");
 	push2(B4at(DT+4));
 	NEXT;
 }	// }}}

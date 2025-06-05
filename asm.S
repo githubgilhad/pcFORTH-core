@@ -1,4 +1,4 @@
-/* vim: set ft=asm noexpandtab fileencoding=utf-8 nomodified wrap textwidth=0 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\:|- list: tabstop=8 linebreak showbreak=»\   */
+/* vim: set ft=asm showbreak=»\  noexpandtab fileencoding=utf-8 nomodified wrap textwidth=0 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\:|- list: tabstop=8 linebreak  */
 // ,,g = gcc, exactly one space after "set"
 #if defined(__PC__)
 	.section .note.GNU-stack,"",@progbits
@@ -494,21 +494,22 @@ DEFWORD w_greater, 	0,	">",	f_greater			// (c1 c2 -- flag ) true if greater
 DEFWORD w_greaterequal, 0,	">=",	f_greaterequal			// (c1 c2 -- flag ) true if greaterequal
 DEFWORD w_less, 	0,	"<",	f_less				// (c1 c2 -- flag ) true if less
 DEFWORD w_lessequal, 	0,	"<=",	f_lessequal			// (c1 c2 -- flag ) true if lessequal
-DEFWORD w_greaterD, 	0,	">D",	f_greaterD			// (c1 c2 -- flag ) true if greater
-DEFWORD w_greaterequalD, 0,	">=D",	f_greaterequalD			// (c1 c2 -- flag ) true if greaterequal
-DEFWORD w_lessD, 	0,	"<D",	f_lessD				// (c1 c2 -- flag ) true if less
-DEFWORD w_lessequalD, 	0,	"<=D",	f_lessequalD			// (c1 c2 -- flag ) true if lessequal
+DEFWORD w_greaterD, 	0,	">D",	f_greaterD			// (d1 d2 -- flag ) true if greater
+DEFWORD w_greaterequalD, 0,	">=D",	f_greaterequalD			// (d1 d2 -- flag ) true if greaterequal
+DEFWORD w_lessD, 	0,	"<D",	f_lessD				// (d1 d2 -- flag ) true if less
+DEFWORD w_lessequalD, 	0,	"<=D",	f_lessequalD			// (d1 d2 -- flag ) true if lessequal
+DEFWORD w_notnull,	0,	"NOTNULL", f_notnull			// (daddr -- flag ) true if daddr is not NULL
 # ------------------------------------------------------------------------ more FORTH words from jonesforth
-DEFWORD w_DIVMOD,	0,	"/MOD",	f_DIVMOD			// ( c1 c2 -- c1%c2 c1/c2 )
+DEFWORD w_DIVMOD,	0,	"/MOD",	f_DIVMOD			// ( c1 c2 -- c1/c2 c1%c2 )
 DEFWORD w_CHAR,		0,	"CHAR",	f_CHAR				// ( -- C) read one char
 	DEFWORD w_OVER,	0,	"OVER",	f_OVER			// ( c1 c2 -- c1 c2 c1 )
 	DEFWORD w_OVER2,	0,	"OVER2",	f_OVER2			// ( d1 d2 -- d1 d2 d1 )
 	DEFWORD w_OVER12,	0,	"OVER12",	f_OVER12			// ( c1 d2 -- c1 d2 c1 )
 	DEFWORD w_OVER21,	0,	"OVER21",	f_OVER21			// ( d1 c2 -- d1 c2 d1 )
-	DEFWORD w_ROT, 	0,	"ROT",	f_ROT			// ( c1 c2 c3 -- c3 c1 c2 )
-	DEFWORD w_NROT,	0,	"-ROT",	f_NROT			// ( c3 c1 c2 -- c1 c2 c3 )
-	DEFWORD w_ROT4, 	0,	"ROT4",	f_ROT4			// ( c1 c2 c3 c4 -- c4 c1 c2 c3 )
-	DEFWORD w_NROT4,	0,	"-ROT4",	f_NROT4			// ( c4 c1 c2 c3 -- c1 c2 c3 c4 )
+	DEFWORD w_ROT,	0,	"ROT",	f_ROT			// ( c1 c2 c3 -- c2 c3 c1 )
+	DEFWORD w_NROT, 0,	"-ROT",	f_NROT			// ( c1 c2 c3 -- c3 c1 c2 )
+	DEFWORD w_ROT4, 	0,	"ROT4",	f_ROT4			// ( c1 c2 c3 c4 -- c2 c3 c4 c1 )
+	DEFWORD w_NROT4,	0,	"-ROT4",	f_NROT4			// ( c1 c2 c3 c4 -- c4 c1 c2 c3 )
 	DEFWORD w_QDUP,	0,	"?DUP",	f_QDUP		// duplicate top of stack if non-zero
 	DEFWORD w_QDUPD,	0,	"?DUP2",	f_QDUPD		// duplicate Double top of stack if non-zero
 	DEFWORD w_INVERT, 	0,	"INVERT",	f_INVERT	 // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)

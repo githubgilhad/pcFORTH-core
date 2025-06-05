@@ -1,4 +1,6 @@
+\ vim: set ft=forth showbreak=»\  noexpandtab fileencoding=utf-8 nomodified wrap textwidth=0 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\:|- list: tabstop=8 linebreak  */
 dec
+: C>D 0 SWAP ; \ ( c -- d ) \ converts to double ( "CellToDouble" )
 \ -*- text -*-
 \	A sometimes minimal FORTH compiler and tutorial for Linux / i386 systems. -*- asm -*-
 \	By Richard W.M. Jones <rich@annexia.org> http://annexia.org/forth
@@ -252,9 +254,10 @@ dec
 : NIP ( x y -- y ) SWAP DROP ;
 : TUCK ( x y -- y x y ) SWAP OVER ;
 : PICK ( x_u ... x_1 x_0 u -- x_u ... x_1 x_0 x_u )
-	1+		( add one because of 'u' on the stack )
-	4 *		( multiply by the word size )
-	S? +		( add to the stack pointer )
+	3 +		( add three because of 'u' converted to double will be on the stack and wee need 0 based indexing )
+	2 *		( multiply by the word size )
+	C>D		( convert do doble )
+	S? SWAP2 -D		( add to the stack pointer - substract as we have stack growing up )
 	@    		( and fetch )
 ;
 
@@ -326,14 +329,15 @@ dec
 )
 : .S		( -- )
 	S?		( get current stack pointer )
+	0 2 -D	( do not show this )
 	BEGIN
-		DUP2 S0 D@ <D
+		DUP2 S0 <D
 	WHILE
 		DUP2 @ U.	( print the stack element )
 		SPACE
-		4+		( move up )
+		0 2 -D		( move up )
 	REPEAT
-	DROP2
+	@ U.
 ;
 
 ( This word returns the width (in characters) of an unsigned number in the current base )
@@ -421,8 +425,8 @@ dec
 
 ( DEPTH returns the depth of the stack. )
 : DEPTH		( -- n )
-	S0 D@ S? -D
-	4D-			( adjust because S0 was on the stack when we pushed DSP )
+	S? S0 -D
+	2D- SWAP DROP /2			( adjust because S0 was on the stack when we pushed DSP )
 ;
 
 (
@@ -586,7 +590,16 @@ dec
 	Note for people reading the code below: DOCOL is a constant word which we defined in the
 	assembler part which returns the value of the assembler symbol of the same name.
 )
-: CONSTANT ( ??? )
+: CONSTANT ( c -- )
+	WORD		( get the name (the name follows CONSTANT) )
+	CREATE		( make the dictionary entry )
+	DOCOL ,		( append DOCOL (the codeword field of this word) )
+	' LIT ,		( append the codeword LIT )
+	C>D		( convert stack to double )
+	,		( append the value on the top of the stack )
+	' EXIT ,	( append the codeword EXIT )
+;
+: CONSTANT2 ( d -- )
 	WORD		( get the name (the name follows CONSTANT) )
 	CREATE		( make the dictionary entry )
 	DOCOL ,		( append DOCOL (the codeword field of this word) )
@@ -780,6 +793,7 @@ dec
 	LAST D@	( start at LAST dictionary entry )
 	BEGIN
 		?DUP2		( while link pointer is not null )
+		NOTNULL
 	WHILE
 		DUP2 ?HIDDEN NOT IF	( ignore hidden words )
 			DUP2 ID.		( but if not hidden, print the word )
@@ -835,9 +849,9 @@ dec
 	HEX			( and switch to hexadecimal mode )
 
 	BEGIN
-		?DUP2		( while len > 0 )
+		?DUP		( while len > 0 )
 	WHILE
-		OVER12 8 U.R	( print the address )
+		OVER21 SWAP 4 U.R 4 U.R 	( print the address )
 		SPACE
 
 		( print up to 16 words on this line )
@@ -851,7 +865,7 @@ dec
 			2 .R SPACE	( print the byte )
 			1+ SWAP12 1-	( daddr len linelen daddr -- daddr len daddr+1 linelen-1 )
 		REPEAT
-		DROP		( daddr len )
+		DROP2		( daddr len )
 
 		( print the ASCII equivalents )
 		DUP3 1- 15 AND 1+ ( daddr len daddr linelen )
@@ -867,7 +881,7 @@ dec
 			THEN
 			1+ SWAP12 1-	( daddr len linelen daddr -- daddr len daddr+1 linelen-1 )
 		REPEAT
-		DROP		( daddr len )
+		DROP2		( daddr len )
 		CR
 
 		DUP 1- 15 AND 1+ ( daddr len linelen )
@@ -876,7 +890,7 @@ dec
 		>R +21 R>	( daddr+linelen len-linelen )
 	REPEAT
 
-	DROP			( restore stack )
+	DROP2			( restore stack )
 	BASE C!			( restore saved BASE )
 ;
 
