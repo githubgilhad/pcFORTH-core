@@ -96,6 +96,9 @@ dec
 : '0' [ 0 CHAR 0 ] LITERAL ;
 : '-' [ 0 CHAR - ] LITERAL ;
 : '.' [ 0 CHAR . ] LITERAL ;
+: '<' [ 0 CHAR < ] LITERAL ;
+: '>' [ 0 CHAR > ] LITERAL ;
+: '|' [ 0 CHAR | ] LITERAL ;
 
 \ While compiling, '[COMPILE] word' compiles 'word' if it would otherwise be IMMEDIATE.
 : [COMPILE] IMMEDIATE
@@ -329,16 +332,19 @@ dec
 	Very useful for debugging.
 )
 : .S		( -- )
-	S?		( get current stack pointer )
-	0 2 -D	( do not show this )
+	S?		( get current stack pointer - it is out of stack )
+\	0 2 -D	( get address of top stack item )
+	BASE C@ SWAP21 hex
 	BEGIN
-		DUP2 S0 <D
+		DUP2 S0 >D
 	WHILE
-		DUP2 @ U.	( print the stack element )
-		SPACE
 		0 2 -D		( move up )
+		DUP2 @ '<' EMIT U. '>' EMIT	( print the stack element )
+\		SPACE
 	REPEAT
-	@ U.
+\	@ '<' EMIT  U. '>' EMIT SPACE
+	DROP2 '|' EMIT SPACE
+	BASE C!
 ;
 
 ( This word returns the width (in characters) of an unsigned number in the current base )
@@ -427,7 +433,7 @@ dec
 ( DEPTH returns the depth of the stack. )
 : DEPTH		( -- n )
 	S? S0 -D
-	2D- SWAP DROP /2			( adjust because S0 was on the stack when we pushed DSP )
+	2 C>D -D SWAP DROP /2			( adjust because S0 was on the stack when we pushed DSP )
 ;
 
 (
@@ -634,7 +640,7 @@ dec
 	a word is compiled that HERE has been left as a multiple of 4).
 )
 : ALLOT		( n -- addr )
-	HERE D@ SWAP	( here n )
+	HERE D@ SWAP12	( here n )
 	HERE +!		( adds n to HERE, after this the old value of HERE is still on the stack )
 ;
 
@@ -643,17 +649,17 @@ dec
 	is the natural size for integers on this machine architecture.  On this 32 bit machine therefore
 	CELLS just multiplies the top of stack by 4.
 )
-: CELLS ( n -- n ) 4 * ;
+: CELLS ( n -- n ) 2 * ;
 
 (
 	So now we can define VARIABLE easily in much the same way as CONSTANT above.  Refer to the
 	diagram above to see what the word that this creates will look like.
 )
 : VARIABLE ( ?? )
-	1 CELLS ALLOT	( allocate 1 cell of memory, push the pointer to this memory )
+	2 CELLS ALLOT	( allocate 2 cells of memory, push the pointer to this memory )
 	WORD CREATE	( make the dictionary entry (the name follows VARIABLE) )
 	DOCOL ,		( append DOCOL (the codeword field of this word) )
-	' LIT ,		( append the codeword LIT )
+	' LIT2 ,	( append the codeword LIT )
 	,		( append the pointer to the new memory )
 	' EXIT ,	( append the codeword EXIT )
 ;
@@ -713,6 +719,15 @@ dec
 	WORD CREATE	( make the dictionary entry (the name follows VALUE) )
 	DOCOL ,		( append DOCOL )
 	' LIT ,		( append the codeword LIT )
+	C>D		( convert stack to double )
+	,		( append the initial value )
+	' EXIT ,	( append the codeword EXIT )
+;
+
+: VALUE2		( d -- )
+	WORD CREATE	( make the dictionary entry (the name follows VALUE) )
+	DOCOL ,		( append DOCOL )
+	' LIT2 ,		( append the codeword LIT )
 	,		( append the initial value )
 	' EXIT ,	( append the codeword EXIT )
 ;
@@ -724,10 +739,25 @@ dec
 	4+		( increment to point at the value )
 	STATE C@ IF	( compiling? )
 		' LIT ,		( compile LIT )
+		C>D		( convert stack to double )
 		,		( compile the address of the value )
-		' ! ,		( compile ! )
+		' D! ,		( compile ! )
 	ELSE		( immediate mode )
 		!		( update it straightaway )
+	THEN
+;
+
+: TO2 IMMEDIATE	( D -- )
+	WORD		( get the name of the value )
+	FIND		( look it up in the dictionary )
+	>DFA		( get a pointer to the first data field (the 'LIT') )
+	4+		( increment to point at the value )
+	STATE C@ IF	( compiling? )
+		' LIT2 ,	( compile LIT )
+		,		( compile the address of the value )
+		' D! ,		( compile ! )
+	ELSE		( immediate mode )
+		D!		( update it straightaway )
 	THEN
 ;
 
@@ -739,10 +769,25 @@ dec
 	4+		( increment to point at the value )
 	STATE C@ IF	( compiling? )
 		' LIT ,		( compile LIT )
+		C>D		( convert stack to double )
 		,		( compile the address of the value )
 		' +! ,		( compile +! )
 	ELSE		( immediate mode )
 		+!		( update it straightaway )
+	THEN
+;
+( dx +TO2 VAL adds dx to VAL )
+: +TO2 IMMEDIATE
+	WORD		( get the name of the value )
+	FIND		( look it up in the dictionary )
+	>DFA		( get a pointer to the first data field (the 'LIT') )
+	4+		( increment to point at the value )
+	STATE C@ IF	( compiling? )
+		' LIT ,		( compile LIT )
+		,		( compile the address of the value )
+		' +!D ,		( compile +! )
+	ELSE		( immediate mode )
+		+!D		( update it straightaway )
 	THEN
 ;
 
@@ -826,13 +871,14 @@ dec
 	in the current implementation VARIABLE FOO FORGET FOO will leak 1 cell of memory.
 )
 
-(
+
 : FORGET
 	WORD FIND	( find the word, gets the dictionary entry address )
+	DUP2 ISNULL	( check if word was found )
+		IF DROP2 RETURN THEN ( if not, then return )
 	DUP2 D@ LAST D!	( set LAST to point to the previous word )
 	HERE D!		( and store HERE with the dictionary address )
 ;
-)
 (
 	DUMP ----------------------------------------------------------------------
 
@@ -1037,10 +1083,11 @@ dec
 	LAST D@	( start at LAST dictionary entry )
 	BEGIN
 		?DUP2		( while link pointer is not null )
+		NOTNULL
 	WHILE
 		DUP4 SWAP2	( cfa curr curr cfa )
 		<D IF		( current dictionary entry < cfa? )
-			NIP		( leave curr dictionary entry on the stack )
+			NIP2		( leave curr dictionary entry on the stack )
 			EXIT
 		THEN
 		D@		( follow link pointer back )
@@ -1078,7 +1125,7 @@ dec
 		<>D		( word last curr word<>curr? )
 	WHILE			( word last curr )
 		NIP2		( word curr )
-		DUP2 D@		( word curr prev (which becomes: word last curr) )
+		DUP2 D@		( word curr prev ( which becomes: word last curr ) )
 	REPEAT
 
 	DROP2		( at this point, the stack is: start-of-word end-of-word )
@@ -1089,42 +1136,50 @@ dec
 	DUP2 ?IMMEDIATE IF ." IMMEDIATE " THEN
 
 	>DFA		( get the data address, ie. points after DOCOL | end-of-word start-of-data )
-
+\ .s 0 noinfo 0 notrace CR
 	( now we start decompiling until we hit the end of the word )
 	BEGIN		( end start )
-		OVER2 >
+		OVER2 OVER2 >D
+\ .s
 	WHILE
 		DUP2 D@		( end start codeword )
-
 		CASE2
 		' LIT OF2		( is it LIT ? )
 			0 4 +D DUP2 @		( get next word which is the integer constant )
-			.			( and print it )
+			. SPACE			( and print it )
+		ENDOF
+		' LIT2 OF2		( is it LIT ? )
+			0 4 +D DUP2 D@		( get next word which is the integer constant )
+			SWAP . SPACE . SPACE	( and print it )
 		ENDOF
 		' LITSTRING OF2		( is it LITSTRING ? )
+\ .s 0 noinfo 0 notrace CR
 			[ 0 CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
 			0 4 +D DUP2 C@		( get the length word )
-			SWAP 4 + SWAP		( end start+4 length )
-			DUP2 TELL		( print the string )
+\ .s
+			SWAP21 0 4 +D SWAP12		( end start+4 length )
+\ .s
+			OVER21 OVER12 TELL		( print the string )
 			'"' EMIT SPACE		( finish the string with a final quote )
-			+ ALIGNED		( end start+4+len, aligned )
-			4 -			( because we're about to add 4 below )
+			+21 \ ALIGNED		( end start+4+len, aligned )
+\ .s
+			0 4 -D			( because we're about to add 4 below )
 		ENDOF
 		' 0BRANCH OF2		( is it 0BRANCH ? )
 			." 0BRANCH ( "
 			0 4 +D DUP2 D@		( print the offset )
-			. .
+			SWAP . SPACE .
 			." ) "
 		ENDOF
 		' BRANCH OF2		( is it BRANCH ? )
 			." BRANCH ( "
-			4 + DUP @		( print the offset )
-			.
+			0 4 +D DUP2 D@		( print the offset )
+			SWAP . SPACE .
 			." ) "
 		ENDOF
 		' ' OF2			( is it ' (TICK) ? )
 			[ 0 CHAR ' ] LITERAL EMIT SPACE
-			4 + DUP @		( get the next codeword )
+			0 4 +D DUP2 D@		( get the next codeword )
 			CFA>			( and force it to be printed as a dictionary entry )
 			ID. SPACE
 		ENDOF
@@ -1132,14 +1187,14 @@ dec
 			( We expect the last word to be EXIT, and if it is then we don't print it
 			  because EXIT is normally implied by ;.  EXIT can also appear in the middle
 			  of words, and then it needs to be printed. )
-			DUP2			( end start end start )
+			OVER2 OVER2			( end start end start )
 			0 4 +D			( end start end start+4 )
 			<>D IF			( end start | we're not at the end )
 				." EXIT "
 			THEN
 		ENDOF
 					( default case: )
-			DUP			( in the default case we always need to DUP before using )
+			DUP2			( in the default case we always need to DUP before using )
 			CFA>			( look up the codeword to get the dictionary entry )
 			ID. SPACE		( and print it )
 		ENDCASE2
@@ -1149,9 +1204,9 @@ dec
 
 	';' EMIT CR
 
-	DROP2		( restore stack )
+	DROP2 DROP2		( restore stack )
 ;
-(
+
 (
 	EXECUTION TOKENS ----------------------------------------------------------------------
 
@@ -1549,7 +1604,7 @@ dec
 	CELLS		( convert to an offset )
 	S0 @ +		( add to base stack address )
 ;
-
+(
 (
 	SYSTEM CALLS AND FILES  ----------------------------------------------------------------------
 
@@ -1835,3 +1890,5 @@ HIDE WELCOME
 )
 \ 0 noinfo 0 notrace
 \ 1 noinfo 1 notrace
+\ VARIABLE VAR '' VAR DUP2 0 noinfo 0 notrace show dump SEE VAR
+\ '' DOUBLE DUP2 0 noinfo show 1 noinfo dump SEE DOUBLE

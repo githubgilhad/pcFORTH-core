@@ -56,11 +56,12 @@
 : FORGET					\ DEFWORD w_forget,0,"FORGET",f_docol			; forget word (and all after)
 	WORD FIND				\	.long w_word_cw, w_find_cw
 \	DUP2 0x800000 ==D IF EXIT FI		\    check, if the WORD exist 	 \ cannot use IMMEDIATE words in asm.compile
-	DUP2 0x800000 <>D 
-	0BRANCH \'3 DROP2 RETURN		\ better check
-	DUP2 HERE !D				\ release RAM
-	DUP2 D@ LAST !D				\	.long w_dup_D_cw, w_DoubleAt_cw, var_LAST_cw, w_StoreDouble_cw
-	HERE D@ !D ;				\	.long var_HERE_cw, w_DoubleAt_cw, w_StoreDouble_cw, w_exit_cw
+\	DUP2 0x800000 <>D 
+\	0BRANCH \'3 DROP2 RETURN		\ better check
+	DUP2 ISNULL 
+	0BRANCH \'0x0C DROP2 RETURN		\ better check for NULLs
+	DUP2 D@ LAST !D				\ set LAST header to value of next field
+	HERE !D ;				\ free RAM memory
 
 : ascii 					\ ( -- ) emits 00..FF chars
 	LIT \'0x0				\ loop variable
@@ -70,4 +71,4 @@
 	DUP LIT \'0x0100 - 0= 			\ ? equal to 256?
 	0BRANCH \'0xFFFFFFD4 			\ if no, repeat (branch to BEGIN)
 	DROP ;					\ cleanup
-
+: '' WORD FIND h2cw ;

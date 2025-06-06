@@ -112,40 +112,43 @@ DEFWORD w_FORGET,0,"FORGET",f_docol      // 000055 	: FORGET					\ DEFWORD w_for
 	.long w_word_cw                  // 000056 		WORD FIND				\	.long w_word_cw, w_find_cw
 	.long w_find_cw                 
                                          // 000057 	\	DUP2 0x800000 ==D IF EXIT FI		\    check, if the WORD exist 	 \ cannot use IMMEDIATE words in asm.compile
-	.long w_dup_D_cw                 // 000058 		DUP2 0x800000 <>D 
-	.long w_lit2_cw, 0x800000       
-	.long w_notequalD_cw            
-	.long w_0branch_cw               // 000059 		0BRANCH \'3 DROP2 RETURN		\ better check
-	.long 3                         
+                                         // 000058 	\	DUP2 0x800000 <>D 
+                                         // 000059 	\	0BRANCH \'3 DROP2 RETURN		\ better check
+	.long w_dup_D_cw                 // 000060 		DUP2 ISNULL 
+	.long w_isnull_cw               
+	.long w_0branch_cw               // 000061 		0BRANCH \'0x0C DROP2 RETURN		\ better check for NULLs
+	.long 0x0C                      
 	.long w_drop_D_cw               
 	.long w_return_cw               
-	.long w_dup_D_cw                 // 000060 		DUP2 HERE !D				\ release RAM
-	.long var_HERE_cw               
-	.long w_StoreDouble_cw          
-	.long w_dup_D_cw                 // 000061 		DUP2 D@ LAST !D				\	.long w_dup_D_cw, w_DoubleAt_cw, var_LAST_cw, w_StoreDouble_cw
+	.long w_dup_D_cw                 // 000062 		DUP2 D@ LAST !D				\ set LAST header to value of next field
 	.long w_DoubleAt_cw             
 	.long var_LAST_cw               
 	.long w_StoreDouble_cw          
-	.long var_HERE_cw                // 000062 		HERE D@ !D ;				\	.long var_HERE_cw, w_DoubleAt_cw, w_StoreDouble_cw, w_exit_cw
-	.long w_DoubleAt_cw             
+	.long var_HERE_cw                // 000063 		HERE !D ;				\ free RAM memory
 	.long w_StoreDouble_cw          
 	.long w_exit_cw                 
 
-DEFWORD w_ascii,0,"ascii",f_docol        // 000064 	: ascii 					\ ( -- ) emits 00..FF chars
-	.long w_lit_cw                   // 000065 		LIT \'0x0				\ loop variable
+DEFWORD w_ascii,0,"ascii",f_docol        // 000065 	: ascii 					\ ( -- ) emits 00..FF chars
+	.long w_lit_cw                   // 000066 		LIT \'0x0				\ loop variable
 	.long 0x0                       
-                                         // 000066 							\ BEGIN - target for 0BRANCH
-	.long w_dup_cw                   // 000067 		DUP EMIT 				\ EMIT current char
+                                         // 000067 							\ BEGIN - target for 0BRANCH
+	.long w_dup_cw                   // 000068 		DUP EMIT 				\ EMIT current char
 	.long w_emit_cw                 
-	.long w_lit_cw                   // 000068 		LIT \'0x01 +				\ i++
+	.long w_lit_cw                   // 000069 		LIT \'0x01 +				\ i++
 	.long 0x01                      
 	.long w_plus_cw                 
-	.long w_dup_cw                   // 000069 		DUP LIT \'0x0100 - 0= 			\ ? equal to 256?
+	.long w_dup_cw                   // 000070 		DUP LIT \'0x0100 - 0= 			\ ? equal to 256?
 	.long w_lit_cw                  
 	.long 0x0100                    
 	.long w_minus_cw                
 	.long w_zero_cw                 
-	.long w_0branch_cw               // 000070 		0BRANCH \'0xFFFFFFD4 			\ if no, repeat (branch to BEGIN)
+	.long w_0branch_cw               // 000071 		0BRANCH \'0xFFFFFFD4 			\ if no, repeat (branch to BEGIN)
 	.long 0xFFFFFFD4                
-	.long w_drop_cw                  // 000071 		DROP ;					\ cleanup
+	.long w_drop_cw                  // 000072 		DROP ;					\ cleanup
+	.long w_exit_cw                 
+
+DEFWORD w_'',0,"''",f_docol              // 000073 	: '' WORD FIND h2cw ;
+	.long w_word_cw                 
+	.long w_find_cw                 
+	.long w_h2cw_cw                 
 	.long w_exit_cw                 

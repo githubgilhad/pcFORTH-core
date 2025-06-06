@@ -322,7 +322,7 @@ jmp_indirect_24:
 	DEFWORD const_\name,0,"\name",f_doconst2
 	.long \value
 .endm	// }}}
-	//  :s@DEFWORD [^,]*,[^,]*,[^,]*,\s*\([^ 	;#/]*\)[^;#/]*\(.*\)@void \1() {	// {{{ \2\r	INFO("\1");\r	\r	NEXT;\r}	// }}}
+	//  :s@DEFWORD [^,]*,[^,]*,\s*"\([^"]*\)"\s*,\s*\([^ 	;#/]*\)[^;#/]*\(.*\)@void \2() {	// {{{ \3\r	INFO("\1");\r	\r	NEXT;\r}	// }}}
 	// ;;; trick for STOP value for search: 0.header with none data
 	.long 0		// prev header none
 1:
@@ -470,6 +470,7 @@ DEFWORD w_h2da, 	0,	"h2da",	f_h2da		// ( h -- da ) convert head address to data 
 DEFWORD w_ToDFA, 	0,	">DFA",	f_h2da		// ( h -- da ) convert head address to data address
 DEFWORD w_show, 	0,	"show",	f_show		// ( cw -- ) show  try to show definition of WORD addressed by codeword
 DEFWORD w_export, 	0,	"export",	f_export	// ( cw -- ) export  try to export definition of WORD addressed by codeword for forth2inc.py
+DEFWORD w_stack,	0,	".s",	f_stack		// ( -- ) nonestructiove print of stack (for debug mainly)
 DEFCONST1 ff,	0xFF
 DEFCONST1 aa,	0xAA
 # -------------------------------------------------------------------------------- more primitives
@@ -479,7 +480,7 @@ DEFWORD w_right_brac,	0,	"]",	f_right_brac			// ] goes to compile mode
 DEFWORD w_find, 	0,	"FIND",	f_find				// WORD FIND return Addr_of_header (or 0 0 )
 DEFWORD w_hidden,	0,	"HIDDEN",	f_hidden		// Addr_of_header HIDE hide/unhide the word
 DEFWORD w_tick, 	0,	"'",	f_tick				// push CW_address of next word to stack (and skip it)
-DEFWORD w_immediate,	FLG_IMMEDIATE,	"IMMEDIATE",	f_immediate		//  IMMEDIATE make the  last word immediate
+DEFWORD w_immediate,	FLG_IMMEDIATE,	"IMMEDIATE",	f_immediate	//  IMMEDIATE make the  last word immediate
 DEFWORD w_zero, 	0,	"0=",	f_zero				// true if zero
 DEFWORD w_notzero,  	0,	"0<>",	f_notzero			// true if not zero
 DEFWORD w_positive,	0,	"0>",	f_positive			// true if positive
@@ -499,6 +500,7 @@ DEFWORD w_greaterequalD, 0,	">=D",	f_greaterequalD			// (d1 d2 -- flag ) true if
 DEFWORD w_lessD, 	0,	"<D",	f_lessD				// (d1 d2 -- flag ) true if less
 DEFWORD w_lessequalD, 	0,	"<=D",	f_lessequalD			// (d1 d2 -- flag ) true if lessequal
 DEFWORD w_notnull,	0,	"NOTNULL", f_notnull			// (daddr -- flag ) true if daddr is not NULL
+DEFWORD w_isnull,	0,	"ISNULL", f_isnull			// (daddr -- flag ) true if daddr is NULL
 # ------------------------------------------------------------------------ more FORTH words from jonesforth
 DEFWORD w_DIVMOD,	0,	"/MOD",	f_DIVMOD			// ( c1 c2 -- c1/c2 c1%c2 )
 DEFWORD w_CHAR,		0,	"CHAR",	f_CHAR				// ( -- C) read one char
@@ -515,12 +517,12 @@ DEFWORD w_CHAR,		0,	"CHAR",	f_CHAR				// ( -- C) read one char
 	DEFWORD w_INVERT, 	0,	"INVERT",	f_INVERT	 // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
 	DEFWORD w_ADDSTORE, 	0,	"+!",	f_ADDSTORE	// ( c Daddr -- ) [Daddr] += c
 	DEFWORD w_SUBSTORE, 	0,	"-!",	f_SUBSTORE	// ( c Daddr -- ) [Daddr] -= c
+	DEFWORD w_ADDSTORED, 	0,	"+!D",	f_ADDSTORED	// ( d Daddr -- ) [Daddr] += d Double
+	DEFWORD w_SUBSTORED, 	0,	"-!D",	f_SUBSTORED	// ( d Daddr -- ) [Daddr] -= d Double
 	DEFWORD w_CMOVE, 	0,	"CMOVE",	f_CMOVE	// ( saddr daddr len -- ) CharMove (len) from saddr to daddr
-	DEFWORD w_LITSTRING, 	0,	"LITSTRING",	f_LITSTRING	// ( -- daddr len ) push daddr and len of string on the stach - similar to LIT
+	DEFWORD w_LITSTRING, 	FLG_PSTRING,	"LITSTRING",	f_LITSTRING	// ( -- daddr len ) push daddr and len of string on the stach - similar to LIT
 	DEFWORD w_TELL, 	0,	"TELL",	f_TELL			// ( daddr len -- ) prints out string
-/*
-	DEFWORD w_EXECUTE, 	0,	"EXECUTE",	f_EXECUTE	
-*/
+	DEFWORD w_EXECUTE, 	0,	"EXECUTE",	f_EXECUTE	// ( xt -- ) execute xt (&cw)
 # -------------------------------------------------------------------------------- more FORTH words
 
 #include "words.inc"
