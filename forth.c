@@ -876,11 +876,27 @@ void f_word() {	 // {{{ Put address and size of buff to stack
 	push(word_buf_len);
 	NEXT;
 }	// }}}
+	char buf[32];	// stack eating structures cannot be in NEXT-chained functions, or stack will overflow !!!
 void f_docol() {	// {{{
 	TRACE("docol");
 // ERROR("Press ANY key to continue");wait_for_char();
 	Rpush(IP);
 	IP=DT+4;	// README: DT points to 4B codeword, so next address is DT+4B and now it is on Data[0] in the target header
+	if (! notrace) { 
+		write_eoln();
+		uint32_t p=cw2h(DT);
+		if (p!=0) {
+			p+=5;
+			uint8_t i,l=B1at(p++);
+			buf[l+2]=0;
+			i=0;
+			buf[i++]='[';
+			while (l!=0) {buf[i++]=B1at(p++);l--;};
+			buf[i++]=']';
+			buf[i++]=0;
+			trace(buf);
+			};
+		};
 	DEBUG_DUMP(IP,"IP in f_docol	");
 	DEBUG_DUMP(DT,"DT in f_docol	");
 	NEXT;
@@ -924,7 +940,6 @@ void f_comma() {	// {{{ take 3B address (2 CELLs) from datastack and put it to H
 	HERE+=2;
 	NEXT;
 }	// }}}
-	char buf[32];	// stack eating structures cannot be in NEXT-chained functions, or stack will overflow !!!
 void f_dot() { 	 // {{{
 	TRACE(".");
 	CELL_t c=pop();

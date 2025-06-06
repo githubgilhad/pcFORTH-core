@@ -252,12 +252,13 @@ dec
 
 ( Some more complicated stack examples, showing the stack notation. )
 : NIP ( x y -- y ) SWAP DROP ;
+: NIP2 ( dx dy -- dy ) SWAP2 DROP2 ;
 : TUCK ( x y -- y x y ) SWAP OVER ;
 : PICK ( x_u ... x_1 x_0 u -- x_u ... x_1 x_0 x_u )
 	3 +		( add three because of 'u' converted to double will be on the stack and wee need 0 based indexing )
 	2 *		( multiply by the word size )
 	C>D		( convert do doble )
-	S? SWAP2 -D		( add to the stack pointer - substract as we have stack growing up )
+	S? SWAP2 -D	( add to the stack pointer - substract as we have stack growing up )
 	@    		( and fetch )
 ;
 
@@ -908,6 +909,13 @@ dec
 		testn OF ... ENDOF
 		... ( default case )
 		ENDCASE
+		
+		CASE2
+		dtest1 OF2 ... ENDOF
+		dtest2 OF2 ... ENDOF
+		dtestn OF2 ... ENDOF
+		... ( default case )
+		ENDCASE2
 
 	The CASE statement tests the value on the stack by comparing it for equality with
 	test1, test2, ..., testn and executes the matching piece of code within OF ... ENDOF.
@@ -987,6 +995,28 @@ dec
 		[COMPILE] THEN
 	REPEAT
 ;
+: CASE2 IMMEDIATE
+	0 0		( push 0 to mark the bottom of the stack )
+;
+
+: OF2 IMMEDIATE
+	' OVER2 ,	( compile OVER )
+	' =D ,		( compile = )
+	[COMPILE] IF	( compile IF )
+	' DROP2 ,  	( compile DROP )
+;
+
+: ENDCASE2 IMMEDIATE
+	' DROP2 ,	( compile DROP )
+
+	( keep compiling THEN until we get to our zero marker )
+	BEGIN
+		?DUP2
+		NOTNULL
+	WHILE
+		[COMPILE] THEN
+	REPEAT
+;
 
 (
 	DECOMPILER ----------------------------------------------------------------------
@@ -1043,68 +1073,68 @@ dec
 	HERE D@		( address of the end of the last compiled word )
 	LAST D@	( word last curr )
 	BEGIN
-		2 PICK		( word last curr word )
-		OVER		( word last curr word curr )
-		<>		( word last curr word<>curr? )
+		5 PICK	5 PICK 	( word last curr word )
+		OVER2		( word last curr word curr )
+		<>D		( word last curr word<>curr? )
 	WHILE			( word last curr )
-		NIP		( word curr )
-		DUP @		( word curr prev (which becomes: word last curr) )
+		NIP2		( word curr )
+		DUP2 D@		( word curr prev (which becomes: word last curr) )
 	REPEAT
 
-	DROP		( at this point, the stack is: start-of-word end-of-word )
-	SWAP		( end-of-word start-of-word )
+	DROP2		( at this point, the stack is: start-of-word end-of-word )
+	SWAP2		( end-of-word start-of-word )
 
 	( begin the definition with : NAME [IMMEDIATE] )
-	':' EMIT SPACE DUP ID. SPACE
-	DUP ?IMMEDIATE IF ." IMMEDIATE " THEN
+	':' EMIT SPACE DUP2 ID. SPACE
+	DUP2 ?IMMEDIATE IF ." IMMEDIATE " THEN
 
 	>DFA		( get the data address, ie. points after DOCOL | end-of-word start-of-data )
 
 	( now we start decompiling until we hit the end of the word )
 	BEGIN		( end start )
-		DUP2 >
+		OVER2 >
 	WHILE
-		DUP @		( end start codeword )
+		DUP2 D@		( end start codeword )
 
-		CASE
-		' LIT OF		( is it LIT ? )
-			4 + DUP @		( get next word which is the integer constant )
+		CASE2
+		' LIT OF2		( is it LIT ? )
+			0 4 +D DUP2 @		( get next word which is the integer constant )
 			.			( and print it )
 		ENDOF
-		' LITSTRING OF		( is it LITSTRING ? )
+		' LITSTRING OF2		( is it LITSTRING ? )
 			[ 0 CHAR S ] LITERAL EMIT '"' EMIT SPACE ( print S"<space> )
-			4 + DUP @		( get the length word )
+			0 4 +D DUP2 C@		( get the length word )
 			SWAP 4 + SWAP		( end start+4 length )
 			DUP2 TELL		( print the string )
 			'"' EMIT SPACE		( finish the string with a final quote )
 			+ ALIGNED		( end start+4+len, aligned )
 			4 -			( because we're about to add 4 below )
 		ENDOF
-		' 0BRANCH OF		( is it 0BRANCH ? )
+		' 0BRANCH OF2		( is it 0BRANCH ? )
 			." 0BRANCH ( "
-			4 + DUP @		( print the offset )
-			.
+			0 4 +D DUP2 D@		( print the offset )
+			. .
 			." ) "
 		ENDOF
-		' BRANCH OF		( is it BRANCH ? )
+		' BRANCH OF2		( is it BRANCH ? )
 			." BRANCH ( "
 			4 + DUP @		( print the offset )
 			.
 			." ) "
 		ENDOF
-		' ' OF			( is it ' (TICK) ? )
+		' ' OF2			( is it ' (TICK) ? )
 			[ 0 CHAR ' ] LITERAL EMIT SPACE
 			4 + DUP @		( get the next codeword )
 			CFA>			( and force it to be printed as a dictionary entry )
 			ID. SPACE
 		ENDOF
-		' EXIT OF		( is it EXIT? )
+		' EXIT OF2		( is it EXIT? )
 			( We expect the last word to be EXIT, and if it is then we don't print it
 			  because EXIT is normally implied by ;.  EXIT can also appear in the middle
 			  of words, and then it needs to be printed. )
 			DUP2			( end start end start )
-			4 +			( end start end start+4 )
-			<> IF			( end start | we're not at the end )
+			0 4 +D			( end start end start+4 )
+			<>D IF			( end start | we're not at the end )
 				." EXIT "
 			THEN
 		ENDOF
@@ -1112,9 +1142,9 @@ dec
 			DUP			( in the default case we always need to DUP before using )
 			CFA>			( look up the codeword to get the dictionary entry )
 			ID. SPACE		( and print it )
-		ENDCASE
+		ENDCASE2
 
-		4 +		( end start+4 )
+		0 4 +D		( end start+4 )
 	REPEAT
 
 	';' EMIT CR
@@ -1803,3 +1833,5 @@ HIDE =NEXT
 WELCOME
 HIDE WELCOME
 )
+\ 0 noinfo 0 notrace
+\ 1 noinfo 1 notrace
