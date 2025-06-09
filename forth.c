@@ -12,6 +12,11 @@
 #include "ptr24.h"
 #include "io.h"
 #include "debug.h"
+#ifdef __PC__ 
+	#include "memdump.h"
+	#include <stdio.h>
+	#define PEDANT
+#endif
 extern uint8_t B1at(uint32_t p);			// asm.S	read 1 byte at address p (somewhere), return 1 byte
 extern uint16_t B2at(uint32_t p);			// asm.S	read 2 bytes at address p (somewhere), return 2 bytes
 extern uint32_t B3at(uint32_t p);			// asm.S	read 3 bytes at address p (somewhere), return 4 bytes (top cleared)
@@ -31,6 +36,14 @@ _Static_assert(sizeof(uint32_t) == 4, "uint32_t must be 32 bits");
 _Static_assert(sizeof(const __memx void *) == 3, "const __memx void * must be 24 bits");
 #elif defined(__PC__)
 _Static_assert(sizeof(const __memx void *) == 4, "const __memx void * must be 32 bits");
+void do_traceback();	// forward
+extern char a_read_char();
+char read_char() {
+	char c=a_read_char();
+	if (c==0x7E) do_traceback();
+	return c;
+}
+
 #else
 #error undefined
 #endif
@@ -184,6 +197,9 @@ void forth_loop(uint32_t cw_addr) {	// {{{
 CELL_t pop() {
 	if (stack==0) {
 		ERROR("pop - Stack underflow");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return 0;
 		};
 	if (! noinfo) write_hex16(stck[stack-1]);
@@ -195,6 +211,9 @@ void push(CELL_t x) {
 	INFO("push");
 	if(stack>STACK_LEN-1) {
 		ERROR("push - Stack owerlow");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return;
 		};
 	stck[stack++]=x;
@@ -202,6 +221,9 @@ void push(CELL_t x) {
 CELL_t peek(){
 	if (stack<1) {
 		ERROR("peek - No Stack left");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return 0;
 		};
 	if (! noinfo) write_hex16(stck[stack-1]);
@@ -211,6 +233,9 @@ CELL_t peek(){
 CELL_t peekX(uint8_t depth){
 	if (stack<1+depth) {
 		ERROR("peek - No Stack left");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return 0;
 		};
 	if (! noinfo) write_hex16(stck[stack-1-depth]);
@@ -222,6 +247,9 @@ CELL_t peekX(uint8_t depth){
 DOUBLE_t pop2() {
 	if (stack<2) {
 		ERROR("pop2 - Stack underflow");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return 0;
 		};
 	if (! noinfo) write_hex32((stck[stack-2]*(1L<<16))+stck[stack-1]);
@@ -233,6 +261,9 @@ DOUBLE_t pop2() {
 void push2(DOUBLE_t x) {
 	if(stack>STACK_LEN-2) {
 		ERROR("push2 - Stack owerlow");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return;
 		};
 	if (! noinfo) write_hex32(x);
@@ -243,6 +274,9 @@ void push2(DOUBLE_t x) {
 DOUBLE_t peek2(){
 	if (stack<2) {
 		ERROR("peek2 - No Stack left");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return 0;
 		};
 	if (! noinfo) write_hex32(stck[stack-2]*(1L<<16)+stck[stack-1]);
@@ -252,6 +286,9 @@ DOUBLE_t peek2(){
 DOUBLE_t peek2X(uint8_t depth){
 	if (stack<2+depth) {
 		ERROR("peek2 - No Stack left");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return 0;
 		};
 	if (! noinfo) write_hex32(stck[stack-2-depth]*(1L<<16)+stck[stack-1-depth]);
@@ -263,6 +300,9 @@ DOUBLE_t peek2X(uint8_t depth){
 PTR_t Rpop() {
 	if (Rstack==0) {
 		ERROR("Rpop - Stack underflow");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return 0;
 		};
 	if (! noinfo) write_hex32(Rstck[Rstack-1]);
@@ -274,6 +314,9 @@ void Rpush(PTR_t x) {
 	INFO("Rpush");
 	if(Rstack>RSTACK_LEN-1) {
 		ERROR("Rpush - Stack owerlow");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return;
 		};
 	Rstck[Rstack++]=x;
@@ -281,6 +324,9 @@ void Rpush(PTR_t x) {
 PTR_t Rpeek(){
 	if (Rstack==0) {
 		ERROR("Rpeek - No Stack left");
+		#ifdef PEDANT
+			do_traceback();
+		#endif
 		return 0;
 		};
 	if (! noinfo) write_hex32(Rstck[Rstack-1]);
@@ -618,6 +664,9 @@ void f_4Dplus() {	// {{{ // increment Double TOS by 4
 void f_Store(){	// {{{ ! ( cell Daddr --  ) store cell at address(Double)
 	TRACE("!");
 	DOUBLE_t d=pop2();
+	#ifdef PEDANT
+		if (! is_in_Wrange(d)) { do_traceback(); ERROR("Not in range");return;};
+	#endif
 	*(CELL_t*)B3PTR(d)=pop();
 	NEXT;
 }	// }}}
@@ -625,28 +674,46 @@ void f_StoreChar(){	// {{{ !C ( char Daddr -- ) store char at address(Double)
 	TRACE("!C");
 	DOUBLE_t d=pop2();
 	uint8_t v=pop();
+	#ifdef PEDANT
+		if (! is_in_Wrange(d)) { do_traceback(); ERROR("Not in range");return;};
+	#endif
 	*(uint8_t*)B3PTR(d)=v;
 	NEXT;
 }	// }}}
 void f_StoreDouble(){	// {{{ !D ( D Daddr -- ) store Double at address(Double)
 	TRACE("!D");
 	DOUBLE_t d=pop2();
+	#ifdef PEDANT
+		if (! is_in_Wrange(d)) { do_traceback(); ERROR("Not in range");return;};
+	#endif
 	*(uint32_t*)B3PTR(d)=pop2();
 	NEXT;
 }	// }}}
 void f_At(){	// {{{ @ ( Daddr -- cell ) cell at address(Double)
 	TRACE("@");
-	push(B2at(pop2()));
+	DOUBLE_t d=pop2();
+	#ifdef PEDANT
+		if (! is_in_range(d)) { do_traceback(); ERROR("Not in range");return;};
+	#endif
+	push(B2at(d));
 	NEXT;
 }	// }}}
 void f_CharAt(){	// {{{ C@ ( Daddr -- char ) char at address(Double)
 	TRACE("C@");
-	push(B2at(pop2())&0xFF);
+	DOUBLE_t d=pop2();
+	#ifdef PEDANT
+		if (! is_in_range(d)) { do_traceback(); ERROR("Not in range");return;};
+	#endif
+	push(B2at(d)&0xFF);
 	NEXT;
 }	// }}}
 void f_DoubleAt(){	// {{{ D@ ( Daddr -- D ) Double at address(Double)
 	TRACE("D@");
-	push2(B4at(pop2()));
+	DOUBLE_t d=pop2();
+	#ifdef PEDANT
+		if (! is_in_range(d)) { do_traceback(); ERROR("Not in range");return;};
+	#endif
+	push2(B4at(d));
 	NEXT;
 }	// }}}
 void f_ToR() {	// {{{ // ( u -- ; R: -- r ) Move to Rstack
@@ -753,6 +820,117 @@ void f_h2da() {	// {{{ // ( h -- da ) convert head address to data address
 	push2(h);
 	NEXT;
 }	// }}}
+#if defined(__PC__)
+void f_memdump() {	// {{{ // ( daddr len -- ) dump data to file
+	INFO("memdump");
+	DOUBLE_t len=pop2();
+	DOUBLE_t addr=pop2();
+	const char  *fname = "dump.bin";
+	memdump(addr,len,fname);
+	NEXT;
+}	// }}}
+uint8_t file_export_name(FILE *f, DOUBLE_t cw) {	// {{{ export name and address from codeword - return flags
+	DOUBLE_t h=cw2h(cw);
+	if (!h) {fprintf(f," Not a word ");return 0;};
+	uint8_t flags,len;
+	flags=B1at(h+4);
+	len=B1at(h+5);
+	for (uint8_t i=0; i<len;i++) fprintf(f,"%c",B1at(h+6+i));
+	return flags;
+}	// }}}
+void file_do_export(FILE *f, DOUBLE_t h, DOUBLE_t top) {	// {{{ 
+	DOUBLE_t cw=h+5;
+	cw+=1+B1at(cw);
+	DOUBLE_t val;
+	uint8_t flags;
+	if (!h) {fprintf(f," Not a word ");return;};
+	fprintf(f, ": ");
+	flags = file_export_name(f,cw);
+	if (val_of_f_docol != B3at(cw)) {
+		fprintf(f," NOT_DOCOL definition ");
+		return;	// neumim rozepsat
+		};
+	do {
+		cw+=4;
+		val=B4at(cw);
+//		if (val == val_of_w_exit_cw) break;
+		fprintf(f," ");
+		flags=file_export_name(f,val);
+		if (flags & FLG_ARG) {
+			cw+=4;
+			val=B4at(cw);
+			fprintf(f," \\'0x%08x ", val);
+			val=0;
+		}
+		else if ((flags & FLG_PSTRING) && (B4at(cw+4)<128)) { // too long strings probabely are not arguments
+			cw+=4;
+			val=B4at(cw);
+			fprintf(f," \\'0x%08x", val);
+			cw+=4;
+			fprintf(f," \\\"");
+			while (val--) fprintf(f,"%c",B1at(cw++));
+			fprintf(f,"\"" );
+			val=0;
+		};
+	} while (cw < top);
+}	// }}}
+void traceback_word(FILE *f, uint16_t depth, DOUBLE_t addr) {	// {{{ // Find word and dump actual position in it
+	DOUBLE_t h=LAST;
+	DOUBLE_t top=HERE;
+	for (int8_t d=0;d<=depth;d++) fprintf(f,"\t");
+	fprintf(f,"0x%08x .. ",addr);
+	fflush(f);
+	while (h) {
+		if ( (h<addr) && (addr<top)) {
+			uint8_t len=B1at(h+5);
+			if (len>31) break; // misformed word
+			if ((addr-h) <(6+len+4)) break; // misformed word
+			for (int8_t i=0;i<len; i++) fprintf(f,"%c",B1at(h+6+i));
+			fprintf(f," : at data+%d :", (addr-h-10-len));
+			fflush(f);
+			file_do_export(f, h, addr);
+			fprintf(f,"\n");
+			return;
+		};
+		// do_export(h,top);
+		top=h;
+		h=B4at(h);
+	};
+	fprintf(f,"NOT A WORD, maybe value? %d\n", addr);
+}	// }}}
+#ifndef min
+#define min(a,b)            (((a) < (b)) ? (a) : (b))
+#endif
+void do_traceback(){	// {{{ dump traceback data to file
+	FILE *f = fopen("traceback.log","a");
+	if (!f) {
+		perror("fopen");
+		return;
+	};
+	fprintf(f,"\n\n\n<==== traceback ====>\n");
+	fprintf(f,"IP=0x%08x\nStack (depth: %d) :",IP,stack);
+	for (int8_t p=0;p<stack;p++) fprintf(f,"[%04x]",stck[p]);
+	fprintf(f,"\t\t\t and maybe ");
+	for (int8_t p=0;p<min(STACK_LEN-stack,8);p++) fprintf(f,"[%04x]",stck[stack+p]);
+	fprintf(f,"\nRStack (depth: %d) :",Rstack);
+	for (int8_t p=0;p<Rstack;p++) fprintf(f,"[%08x]",Rstck[p]);
+	fprintf(f,"\t\t\t and maybe ");
+	for (int8_t p=0;p<min(RSTACK_LEN-Rstack,8);p++) fprintf(f,"[%04x]",Rstck[Rstack+p]);
+	fprintf(f,"\nRAM: 0x%08x, HERE: 0x%08x, LAST:0x%08x\n",B3U32(RAM),HERE,LAST);
+	fprintf(f,"\n	<==== analyze ====>\n");
+	fflush(f);
+	for (int8_t p=0;p<Rstack;p++) traceback_word(f,p,Rstck[p]-4);
+	traceback_word(f,Rstack+1,IP-4);
+	fprintf(f,"\n	<==== analyze end ====>\n\n\n");
+	fclose(f);
+	return;
+}	// }}}
+void f_traceback() {	// {{{ // ( -- ) dump traceback data to file
+	INFO("traceback");
+	do_traceback();
+	NEXT;
+}	// }}}
+#endif
 uint8_t show_name(DOUBLE_t cw, DOUBLE_t orig) {	// {{{ show name and address from codeword - return flags
 	DEBUG_DUMP(cw,"cw\t");
 	DOUBLE_t h=cw2h(cw);
@@ -838,9 +1016,11 @@ uint8_t export_name(DOUBLE_t cw) {	// {{{ export name and address from codeword 
 //	write_str(F(STR_2MORE));
 	return flags;
 }	// }}}
-void do_export(DOUBLE_t cw) {	// {{{ ; ' WORD export - try to export definition of WORD
+void do_export(DOUBLE_t h, DOUBLE_t top) {	// {{{ ; ' WORD export - try to export definition of WORD
 	TRACE("export");
-	DOUBLE_t h=cw2h(cw);
+//	DOUBLE_t cw=h2cw(h);
+	DOUBLE_t cw=h+5;
+	cw+=1+B1at(cw);
 	DOUBLE_t val;
 	uint8_t flags;
 	if (!h) {ERROR("Not a word");return;};
@@ -876,7 +1056,8 @@ void do_export(DOUBLE_t cw) {	// {{{ ; ' WORD export - try to export definition 
 			write_str(F("\""));
 			val=0;
 		};
-	} while (val != val_of_w_exit_cw);
+	} while (cw < top);
+//	} while (val != val_of_w_exit_cw);
 	write_str(F(" ;"));
 	write_eoln();
 
@@ -884,7 +1065,20 @@ void do_export(DOUBLE_t cw) {	// {{{ ; ' WORD export - try to export definition 
 void f_export() {	// {{{ ; ' WORD export - try to export definition of WORD
 	TRACE("export");
 	DOUBLE_t cw=pop2();
-	do_export(cw);
+	DOUBLE_t top=HERE;
+	DOUBLE_t h=cw2h(cw);
+	do_export(h,top);
+	NEXT;
+}	// }}}
+void f_export_all() {	// {{{ // (  -- ) try to export definitions of all words for forth2inc.py
+	INFO("export_all");
+	DOUBLE_t h=LAST;
+	DOUBLE_t top=HERE;
+	while (h>=B3U32(RAM)) {
+		do_export(h,top);
+		top=h;
+		h=B4at(h);
+	};
 	NEXT;
 }	// }}}
 void f_stack() {	// {{{ // ( -- ) nonestructiove print of stack (for debug mainly)

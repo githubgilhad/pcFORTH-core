@@ -71,4 +71,4 @@
 	DUP LIT \'0x0100 - 0= 			\ ? equal to 256?
 	0BRANCH \'0xFFFFFFD4 			\ if no, repeat (branch to BEGIN)
 	DROP ;					\ cleanup
-: '' WORD FIND h2cw ;
+: '' WORD FIND h2cw ;				\ ( "doubletick" )

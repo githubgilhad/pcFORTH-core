@@ -1,4 +1,4 @@
 #pragma once
-#define VERSION_STRING "0.0.1-12-gb06c77a++"
-#define VERSION_COMMIT "b06c77a"
-#define VERSION_MESSAGE "SEE still problematic"
+#define VERSION_STRING "v0.1.0-0-g956d5a2++"
+#define VERSION_COMMIT "956d5a2"
+#define VERSION_MESSAGE "All translates (except files+sys)"

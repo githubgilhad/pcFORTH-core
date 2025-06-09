@@ -354,6 +354,9 @@ PORT H, 0x100
 PORT J, 0x103
 PORT K, 0x106
 PORT L, 0x109
+#elif defined(__PC__)
+DEFWORD w_memdump,	0,	"memdump",	f_memdump	// ( daddr len -- ) dump data to file
+DEFWORD w_traceback,	0,	"traceback",	f_traceback	// ( daddr len -- ) dump traceback data to file
 #endif
 DEFVAR HERE
 DEFVAR LAST
@@ -469,7 +472,8 @@ DEFWORD w_ToCFA, 	0,	">CFA",	f_h2cw		// ( h -- cw ) convert head address to code
 DEFWORD w_h2da, 	0,	"h2da",	f_h2da		// ( h -- da ) convert head address to data address
 DEFWORD w_ToDFA, 	0,	">DFA",	f_h2da		// ( h -- da ) convert head address to data address
 DEFWORD w_show, 	0,	"show",	f_show		// ( cw -- ) show  try to show definition of WORD addressed by codeword
-DEFWORD w_export, 	0,	"export",	f_export	// ( cw -- ) export  try to export definition of WORD addressed by codeword for forth2inc.py
+DEFWORD w_export, 	0,	"export",	f_export	// ( cw -- ) try to export definition of WORD addressed by codeword for forth2inc.py
+DEFWORD w_export_all, 	0,	"export_all",	f_export_all	// (  -- ) try to export definitions of all words for forth2inc.py
 DEFWORD w_stack,	0,	".s",	f_stack		// ( -- ) nonestructiove print of stack (for debug mainly)
 DEFCONST1 ff,	0xFF
 DEFCONST1 aa,	0xAA
@@ -526,6 +530,7 @@ DEFWORD w_CHAR,		0,	"CHAR",	f_CHAR				// ( -- C) read one char
 # -------------------------------------------------------------------------------- more FORTH words
 
 #include "words.inc"
+#include "jones.inc"
 
 
 	.global val_of_w_exit_cw, val_of_f_docol

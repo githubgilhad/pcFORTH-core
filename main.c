@@ -38,7 +38,7 @@ void set_nonblocking_terminal_mode() {
 	extern void my_setup();
 	extern void my_loop();
 
-	char read_char() {
+	char a_read_char() {
 		while ((file_in==NULL) && (a_argc))
 			{
 				a_argc--;
@@ -95,7 +95,8 @@ void setup() {
 }
 
 void loop() {
-	char c = read_char();
+printf("in loop\n");
+	char c = a_read_char();
 	if (c) {
 		write_char(c);  // echo
 	}
@@ -105,6 +106,8 @@ int main(int argc, char **argv) {
 	a_argc=argc;
 	a_argv=argv;
 	if (a_argc) {--a_argc; ++a_argv;};
+printf("to setup\n");
 	setup();
+printf("in main\n");
 //	while(1) loop();
 }

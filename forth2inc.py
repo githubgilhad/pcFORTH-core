@@ -6,17 +6,38 @@ import argparse
 import re
 import sys
 
+# global
+known = {}
+glob_imm = False
+fout=0
+glob_middle=""
+glob_stat=0
+depth=0
+lineno=0
+
 def parse_args():
 	parser = argparse.ArgumentParser(description="Translate FORTH definitions to assembler code.")
-	parser.add_argument("source", nargs="?", default="words.4th", help="source file to translate (words.4th)")
-	parser.add_argument("asmfile", nargs="?", default="asm.S", help="Already defined words file (asm.S)" )
-	parser.add_argument("outfile", nargs="?", default="words.inc", help="output file to create (words.inc)" )
+	parser.add_argument("-s","--source", nargs="?", default="words.4th", help="source file to translate (words.4th)")
+	parser.add_argument("-o", "--outfile", nargs="?", default="words.inc", help="output file to create (words.inc)" )
+	parser.add_argument("-t", "--translatefile", nargs="+", help="file with name pairs ( forth C )" )
+	parser.add_argument("asmfiles", nargs="+", help="One or more assembler files with known words (asm.S asm1.S asm2.S ...)")
 	parser.add_argument("-v", "--verbose", action="store_true")
+	parser.add_argument("-e", "--export", nargs="?", help="exports name pairs to this file (eg. translate.txt)")
 	parser.add_argument("-c", "--col", type=int, default=40, help="Column for comments (default: 40)")
 	return parser.parse_args()
 
+def load_translations(asmfile):
+	global known
+	patternTXT = re.compile(r'^\s*([^\s]*)\s*([^\s]*)\s*')
+	with open(asmfile, encoding='utf-8') as f:
+		for line in f:
+			m = patternTXT.search(line)
+			if m:
+				name, label = m.groups()
+				known[name] = label
+
 def load_known_words(asmfile):
-	known = {}
+	global known
 	patternDW = re.compile(r'^\s*DEFWORD\s+(\w+\\?),[^,]*,\s*"([^"]+)",')
 	patternDV = re.compile(r'^\s*DEFVAR\s+(\w+\\?)')
 	patternDC1 = re.compile(r'^\s*DEFCONST1\s+(\w+\\?)')
@@ -47,7 +68,6 @@ def load_known_words(asmfile):
 				name, = m.groups()
 				for base in ("PORT","PIN","DDR"):
 					known[base+name] = "const_"+base+name
-	return known
 
 def strip_forth_comments(line,nest=0):
 	result = ''
@@ -72,16 +92,13 @@ def strip_forth_comments(line,nest=0):
 def extract_nick_from_comment(line):
 	m = re.search(r'\(.+"([^"]+)".+\)', line)
 	return m.group(1) if m else None
-glob_imm = False
 def extract_immediate_from_line(line):
 	global glob_imm
-	m = re.search(r'IMMEDIATE', line)
+	m = re.search(r'\sIMMEDIATE\s', line)
 	if m:
 		glob_imm = True
 	return "FLG_IMMEDIATE" if m else "0"
 
-fout=0
-glob_middle=""
 def out( left, right):
 	global args,fout,glob_middle
 	tab = 0
@@ -95,9 +112,13 @@ def out( left, right):
 		else:
 			fout.write("\n")
 
-glob_stat=0
+def ToAscii(s):
+	return s.replace('\\', '\\\\').replace('"', '\\"')
+
 def do_token(token,left,right,line):
-	global glob_stat, glob_imm, known, fout
+	global glob_stat, glob_imm, known, fout, lineno
+	token.replace('\\(','(')
+#	print(f"{lineno}: [{token}] [{line}]")
 	if (glob_stat == 0) and (token==':'):
 		glob_stat=1
 		return (left,right)
@@ -105,6 +126,9 @@ def do_token(token,left,right,line):
 		out(left, right)
 		left=""
 		right=""
+	if (glob_stat == 0):
+		print(f"COMMAND {token} in line [{line}] at {lineno} !!!")
+		return(left,right)
 	if (glob_stat == 1):
 		nick = extract_nick_from_comment(line)
 		imm = extract_immediate_from_line(line)
@@ -113,7 +137,10 @@ def do_token(token,left,right,line):
 		else:
 			nick = "w_"+nick
 		fout.write("\n")
-		left=f'DEFWORD {nick},{imm},"{token}",f_docol'
+		left=f'DEFWORD {nick},{imm},"{ToAscii(token)}",f_docol'
+		if token in known:
+			if known[token]!=nick:
+				print(f"redefining known[{token}]={known[token]} to {nick} at {lineno}")
 		known[token]=nick
 		out(left, right)
 		left=""
@@ -138,14 +165,26 @@ def do_token(token,left,right,line):
 				left=f'	.long {nick}_cw'
 			else:
 				left=f'	.long w_lit2_cw, {token}'
+				if args.verbose:
+					ok=False
+					try:
+						int(token,0)
+						ok=True
+					except ValueError:
+						pass
+					if not ok and (token[:2] != "\\'" and token[:2] != "\\\""):
+						print(f"	unknown token {token} at {lineno}")
+					
 			out(left, right)
 			left=""
 			right=""
 			return (left,right)
-	printf("*** WTF error  do_token([{token}],[{left}],[{right}],[{line}])")
+	print(f"*** WTF error  do_token([{token}],[{left}],[{right}],[{line}]) glob_stat={glob_stat} at {lineno}")
 
-def process(line, lineno, depth, fout):
-	global glob_middle
+def process(line, depth, fout):
+	global glob_middle, lineno, known
+#	comm= "(" in known
+	comm=True
 	glob_middle=f"// {lineno:06} 	"
 	right=line
 	left=""
@@ -155,7 +194,7 @@ def process(line, lineno, depth, fout):
 	code=code.strip()
 	i=0
 	while (i<len(code)):
-		if depth or (code[i:i+2] == '( '):
+		if depth or (comm and (code[i:i+2] == '( ')):
 			if code[i:i+2] == '( ':
 				depth +=1
 				i+=2
@@ -176,25 +215,38 @@ def process(line, lineno, depth, fout):
 			left = ""
 			right = ""
 			continue
-		if code[i] == '\\':
+		if code[i:i+2] == "\\\"":	# special: insert next token as ascii
+			i+=2
+			start = i
+			while i < len(code) and not code[i]=="\"":
+				i += 1
+			left=f"	.ascii \"{ToAscii(code[start:i])}\""
+			i += 1
+			out(left, right)
+			left = ""
+			right = ""
+			continue
+		if code[i:i+2] == '\\ ':
 			break
 		if code[i].isspace():
 			i += 1
 			continue
-		if code[i:i+3] == '." ':
-			i += 3
-			start = i
-			while i < len(code) and code[i] != '"':
-				i += 1
-			left=f'	.byte {i-start}'
-			out(left, right)
-			right=""
-			left=f'	.asciiz "{code[start:i]}"'
-			out(left, right)
-			left=""
-			i += 1
-			continue
+#		if code[i:i+3] == '." ':
+#			i += 3
+#			start = i
+#			while i < len(code) and code[i] != '"':
+#				i += 1
+#			left=f'	.byte {i-start}'
+#			out(left, right)
+#			right=""
+#			left=f'	.asciiz "{code[start:i]}"'
+#			out(left, right)
+#			left=""
+#			i += 1
+#			continue
 		else:
+			if code[i] == '\\':
+				i += 1
 			start = i
 			while i < len(code) and not code[i].isspace():
 				i += 1
@@ -204,25 +256,41 @@ def process(line, lineno, depth, fout):
 		out(left, right)
 	return depth
 
-depth=0
 def main():
-	global args,depth,fout,known
+	global args,depth,fout,known,lineno
 	args = parse_args()
-	known = load_known_words(args.asmfile)
-	if args.verbose:
-		print(known)
-		print(f"Nalezeno {len(known)} slov z {args.asmfile}")
+	if args.translatefile:
+		for tr in args.translatefile:
+			if args.verbose:
+				print(f"translatefile: {tr}")
+			load_translations(tr)
+			if args.verbose:
+				print( f"known words so far: {len(known)}")
+	for asmfile in args.asmfiles:
+		if args.verbose:
+			print( f"Importing {asmfile}")
+		load_known_words(asmfile)	# add to known
+		if args.verbose:
+			print( f"known words so far: {len(known)}")
 
+	if args.verbose:
+		print( f"Processing: {args.source} -> {args.outfile}")
 	with open(args.source, encoding='utf-8') as f:
 		source_lines = f.readlines()
 		with  open(args.outfile, 'w',  encoding='utf-8') as fout:
 			fout.write(";/* vim: set filetype=asm noexpandtab fileencoding=utf-8 nomodified nowrap textwidth=270 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\\:|- list: */\n\n")
-			for lineno, line in enumerate(source_lines):
-				depth = process(line.rstrip('\n'), lineno, depth, fout);
-
-
+			for a_lineno, line in enumerate(source_lines):
+				lineno = a_lineno+1
+				depth = process(line.rstrip('\n'), depth, fout);
 	if args.verbose:
-		print(f"Výstup zapsán do {args.outfile}")
+		print( f"known words so far: {len(known)}")
+	if args.export:
+		with  open(args.export, 'w',  encoding='utf-8') as fout:
+			for n,v in known.items():
+				fout.write(f"{n:<16}	{v}\n")
+		print(f"name -> nick pairs exported to: {args.export}")
+
+
 
 if __name__ == "__main__":
 	main()
