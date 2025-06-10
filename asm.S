@@ -357,6 +357,10 @@ PORT L, 0x109
 #elif defined(__PC__)
 DEFWORD w_memdump,	0,	"memdump",	f_memdump	// ( daddr len -- ) dump data to file
 DEFWORD w_traceback,	0,	"traceback",	f_traceback	// ( daddr len -- ) dump traceback data to file
+DEFWORD w_dump, 	0,	"dump",	f_dump
+DEFWORD w_show, 	0,	"show",	f_show		// ( cw -- ) show  try to show definition of WORD addressed by codeword
+DEFWORD w_export, 	0,	"export",	f_export	// ( cw -- ) try to export definition of WORD addressed by codeword for forth2inc.py
+DEFWORD w_export_all, 	0,	"export_all",	f_export_all	// (  -- ) try to export definitions of all words for forth2inc.py
 #endif
 DEFVAR HERE
 DEFVAR LAST
@@ -459,7 +463,6 @@ DEFWORD w_test, 0, "TEST", f_docol
 	.long w_double_cw
 	.long w_debug_cw
 	.long w_exit_cw
-DEFWORD w_dump, 	0,	"dump",	f_dump
 DEFWORD w_nodebug,	0,	"nodebug",	f_nodebug
 DEFWORD w_noinfo,	0,	"noinfo",	f_noinfo
 DEFWORD w_notrace,	0,	"notrace",	f_notrace
@@ -471,9 +474,6 @@ DEFWORD w_h2cw, 	0,	"h2cw",	f_h2cw		// ( h -- cw ) convert head address to codew
 DEFWORD w_ToCFA, 	0,	">CFA",	f_h2cw		// ( h -- cw ) convert head address to codeword address
 DEFWORD w_h2da, 	0,	"h2da",	f_h2da		// ( h -- da ) convert head address to data address
 DEFWORD w_ToDFA, 	0,	">DFA",	f_h2da		// ( h -- da ) convert head address to data address
-DEFWORD w_show, 	0,	"show",	f_show		// ( cw -- ) show  try to show definition of WORD addressed by codeword
-DEFWORD w_export, 	0,	"export",	f_export	// ( cw -- ) try to export definition of WORD addressed by codeword for forth2inc.py
-DEFWORD w_export_all, 	0,	"export_all",	f_export_all	// (  -- ) try to export definitions of all words for forth2inc.py
 DEFWORD w_stack,	0,	".s",	f_stack		// ( -- ) nonestructiove print of stack (for debug mainly)
 DEFCONST1 ff,	0xFF
 DEFCONST1 aa,	0xAA
@@ -508,30 +508,47 @@ DEFWORD w_isnull,	0,	"ISNULL", f_isnull			// (daddr -- flag ) true if daddr is N
 # ------------------------------------------------------------------------ more FORTH words from jonesforth
 DEFWORD w_DIVMOD,	0,	"/MOD",	f_DIVMOD			// ( c1 c2 -- c1/c2 c1%c2 )
 DEFWORD w_CHAR,		0,	"CHAR",	f_CHAR				// ( -- C) read one char
-	DEFWORD w_OVER,	0,	"OVER",	f_OVER			// ( c1 c2 -- c1 c2 c1 )
-	DEFWORD w_OVER2,	0,	"OVER2",	f_OVER2			// ( d1 d2 -- d1 d2 d1 )
-	DEFWORD w_OVER12,	0,	"OVER12",	f_OVER12			// ( c1 d2 -- c1 d2 c1 )
-	DEFWORD w_OVER21,	0,	"OVER21",	f_OVER21			// ( d1 c2 -- d1 c2 d1 )
-	DEFWORD w_ROT,	0,	"ROT",	f_ROT			// ( c1 c2 c3 -- c2 c3 c1 )
-	DEFWORD w_NROT, 0,	"-ROT",	f_NROT			// ( c1 c2 c3 -- c3 c1 c2 )
-	DEFWORD w_ROT4, 	0,	"ROT4",	f_ROT4			// ( c1 c2 c3 c4 -- c2 c3 c4 c1 )
-	DEFWORD w_NROT4,	0,	"-ROT4",	f_NROT4			// ( c1 c2 c3 c4 -- c4 c1 c2 c3 )
-	DEFWORD w_QDUP,	0,	"?DUP",	f_QDUP		// duplicate top of stack if non-zero
-	DEFWORD w_QDUPD,	0,	"?DUP2",	f_QDUPD		// duplicate Double top of stack if non-zero
-	DEFWORD w_INVERT, 	0,	"INVERT",	f_INVERT	 // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
-	DEFWORD w_ADDSTORE, 	0,	"+!",	f_ADDSTORE	// ( c Daddr -- ) [Daddr] += c
-	DEFWORD w_SUBSTORE, 	0,	"-!",	f_SUBSTORE	// ( c Daddr -- ) [Daddr] -= c
-	DEFWORD w_ADDSTORED, 	0,	"+!D",	f_ADDSTORED	// ( d Daddr -- ) [Daddr] += d Double
-	DEFWORD w_SUBSTORED, 	0,	"-!D",	f_SUBSTORED	// ( d Daddr -- ) [Daddr] -= d Double
-	DEFWORD w_CMOVE, 	0,	"CMOVE",	f_CMOVE	// ( saddr daddr len -- ) CharMove (len) from saddr to daddr
-	DEFWORD w_LITSTRING, 	FLG_PSTRING,	"LITSTRING",	f_LITSTRING	// ( -- daddr len ) push daddr and len of string on the stach - similar to LIT
-	DEFWORD w_TELL, 	0,	"TELL",	f_TELL			// ( daddr len -- ) prints out string
-	DEFWORD w_EXECUTE, 	0,	"EXECUTE",	f_EXECUTE	// ( xt -- ) execute xt (&cw)
+DEFWORD w_OVER,	0,	"OVER",	f_OVER			// ( c1 c2 -- c1 c2 c1 )
+DEFWORD w_OVER2,	0,	"OVER2",	f_OVER2			// ( d1 d2 -- d1 d2 d1 )
+DEFWORD w_OVER12,	0,	"OVER12",	f_OVER12			// ( c1 d2 -- c1 d2 c1 )
+DEFWORD w_OVER21,	0,	"OVER21",	f_OVER21			// ( d1 c2 -- d1 c2 d1 )
+DEFWORD w_ROT,	0,	"ROT",	f_ROT			// ( c1 c2 c3 -- c2 c3 c1 )
+DEFWORD w_NROT, 0,	"-ROT",	f_NROT			// ( c1 c2 c3 -- c3 c1 c2 )
+DEFWORD w_ROT4, 	0,	"ROT4",	f_ROT4			// ( c1 c2 c3 c4 -- c2 c3 c4 c1 )
+DEFWORD w_NROT4,	0,	"-ROT4",	f_NROT4			// ( c1 c2 c3 c4 -- c4 c1 c2 c3 )
+DEFWORD w_QDUP,	0,	"?DUP",	f_QDUP		// duplicate top of stack if non-zero
+DEFWORD w_QDUPD,	0,	"?DUP2",	f_QDUPD		// duplicate Double top of stack if non-zero
+DEFWORD w_INVERT, 	0,	"INVERT",	f_INVERT	 // this is the FORTH bitwise "NOT" function (cf. NEGATE and NOT)
+DEFWORD w_ADDSTORE, 	0,	"+!",	f_ADDSTORE	// ( c Daddr -- ) [Daddr] += c
+DEFWORD w_SUBSTORE, 	0,	"-!",	f_SUBSTORE	// ( c Daddr -- ) [Daddr] -= c
+DEFWORD w_ADDSTORED, 	0,	"+!D",	f_ADDSTORED	// ( d Daddr -- ) [Daddr] += d Double
+DEFWORD w_SUBSTORED, 	0,	"-!D",	f_SUBSTORED	// ( d Daddr -- ) [Daddr] -= d Double
+DEFWORD w_CMOVE, 	0,	"CMOVE",	f_CMOVE	// ( saddr daddr len -- ) CharMove (len) from saddr to daddr
+DEFWORD w_LITSTRING, 	FLG_PSTRING,	"LITSTRING",	f_LITSTRING	// ( -- daddr len ) push daddr and len of string on the stack - similar to LIT
+DEFWORD w_TELL, 	0,	"TELL",	f_TELL			// ( daddr len -- ) prints out string
+DEFWORD w_EXECUTE, 	0,	"EXECUTE",	f_EXECUTE	// ( xt -- ) execute xt (&cw)
 # -------------------------------------------------------------------------------- more FORTH words
+
+DEFWORD w_quit,0,"QUIT",f_docol // main loop
+	.long w_interpret_cw
+	.long w_branch_cw
+	.long -8
+DEFWORD w_colon,0,":",f_docol
+	.long w_word_cw, w_create_cw			// create header
+	.long w_lit2_cw, f_docol, w_comma_cw		// fill CW
+	.long var_LAST_cw, w_DoubleAt_cw, w_hidden_cw	// hide until done
+	.long w_right_brac_cw, w_exit_cw		// go to conpile
+
+DEFWORD w_semicol,FLG_IMMEDIATE,";",f_docol
+	.long w_lit2_cw, w_exit_cw, w_comma_cw		// end word
+	.long var_LAST_cw, w_DoubleAt_cw, w_hidden_cw	// unhide it
+	.long w_left_brac_cw, w_exit_cw			// back to immediate
 
 #include "words.inc"
 //	#include "jones.inc"
 
+
+DEFWORD w_lastbuildinword,0,"lastbuildinword",f_lastbuildinword	// ( -- h ) last build in word - put its header addr on stack
 
 	.global val_of_w_exit_cw, val_of_f_docol
 val_of_w_exit_cw:

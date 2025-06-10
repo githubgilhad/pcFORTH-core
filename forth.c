@@ -162,6 +162,7 @@ extern const __memx char w_quit_data;
 extern const __memx DOUBLE_t		val_of_w_exit_cw;
 extern const __memx DOUBLE_t		val_of_f_docol;
 extern const __memx char w_lit2_cw;
+extern const __memx char w_lastbuildinword_head;
 #define NEXT
 //#define NEXT f_next()
 //void f_next() __attribute__((noreturn));
@@ -837,10 +838,10 @@ uint8_t name_to_buf(DOUBLE_t cw) {	// {{{ fill name into global buf codeword - r
 #if defined(__PC__)
 void f_memdump() {	// {{{ // ( daddr len -- ) dump data to file
 	INFO("memdump");
-	DOUBLE_t len=pop2();
+	DOUBLE_t addr2=pop2();
 	DOUBLE_t addr=pop2();
 	const char  *fname = "dump.bin";
-	memdump(addr,len,fname);
+	memdump(addr,addr2-addr,fname);
 	NEXT;
 }	// }}}
 void file_do_export(FILE *f, DOUBLE_t h, DOUBLE_t top) {	// {{{ 
@@ -1522,6 +1523,11 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	IP=pop2();
 	NEXT;
 }	// }}}
+void f_lastbuildinword() {	// {{{ // ( -- h ) last build in word - put its header addr on stack
+	INFO("lastbuildinword");
+	push2(B3U32(&w_lastbuildinword_head));
+	NEXT;
+}	// }}}
 void f_interpret(){	 // {{{
 	TRACE("INTERPRET");
 //	write_str(F("\r\n"));
@@ -1530,7 +1536,11 @@ void f_interpret(){	 // {{{
 	DEBUG_DUMP((HERE),("HERE	"));
 	if (stack>1) DEBUG_DUMP(peek2(),("*stack	"));
 	print_stack();
-	write_str(F(PROMPT));
+	if (STATE==st_executing) {
+		write_str(F(PROMPT));
+	} else {
+		write_str(F(PROMPTcomp));
+	};
 	get_word();
 	INFO(" got: ");info(&word_buf[0]);
 	xpHead1 h=findHead(word_buf_len,&word_buf[0],B3PTR(LAST));

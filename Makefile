@@ -34,10 +34,12 @@ $(shell ctags -R . )
 .PHONY: all clean help
 
 all: $(TARGET)
+	@echo -e "\x1b[1m\x1b[42m\x1b[33m ==== All done for $(TARGET) ==== \x1b[0m" 
 
 $(TARGET): $(OBJS) Makefile
 	$(CXX) $(OBJS) -o $@ $(LDFLAGS)
 	objdump --disassemble --source --line-numbers --demangle -z --section=.text  --section=.data --section=.bss -M intel $@ >$@.dis
+	objcopy -O binary $(BUILD_DIR)/asm.o $(BUILD_DIR)/asm.bin
 
 $(BUILD_DIR)/%.o: %.c Makefile | $(BUILD_DIR)
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -99,12 +101,31 @@ version: $(VERSION_HEADER)
 
 
 $(BUILD_DIR)/asm.o: words.inc jones.inc 
-words.inc: words.4th words.names asm.S Makefile
-	./forth2inc.py -v  -o $@ -e words.export -t words.names -s words.4th asm.S
 
-jones.inc: jones.4th words.inc jones.names asm.S Makefile
-	./forth2inc.py -v  -o $@ -e jones.export -t jones.names -s jones.4th words.inc asm.S
-	@echo "### You may want to do this: comm -1 -3 words.names jones.export >jones.names"
+$(BUILD_DIR)/asm.export: Makefile
+	./forth2inc.py -v -e $@ asm.S
+	@if ! cmp -s $(BUILD_DIR)/asm.export asm.names; then \
+		cp $(BUILD_DIR)/asm.export asm.export; \
+		echo -e "\x1b[1m\x1b[41m vimdiff asm.export asm.names \x1b[0m"; \
+		else rm -f asm.export; fi
+
+words.inc $(BUILD_DIR)/words.export &: words.4int words.names asm.S Makefile 	| $(BUILD_DIR)/asm.export
+	./forth2inc.py -v  -o words.inc -e $(BUILD_DIR)/words.export -t words.names -s words.4int asm.S
+	@comm -1 -3 $(BUILD_DIR)/asm.export $(BUILD_DIR)/words.export >$(BUILD_DIR)/words.export2
+	@if ! cmp -s $(BUILD_DIR)/words.export2 words.names; then \
+		cp $(BUILD_DIR)/words.export2 words.export; \
+		echo -e "\x1b[1m\x1b[41m vimdiff words.export words.names \x1b[0m"; \
+		else rm -f words.export; fi
+
+
+jones.inc $(BUILD_DIR)/jones.export &: jones.4int words.inc jones.names asm.S Makefile	| $(BUILD_DIR)/words.export
+	./forth2inc.py -v  -o jones.inc -e $(BUILD_DIR)/jones.export -t jones.names -s jones.4int words.inc asm.S
+	@comm -1 -3 $(BUILD_DIR)/words.export $(BUILD_DIR)/jones.export >$(BUILD_DIR)/jones.export2
+	@if ! cmp -s $(BUILD_DIR)/jones.export2 jones.names; then \
+		cp $(BUILD_DIR)/jones.export2 jones.export; \
+		echo -e "\x1b[1m\x1b[41m vimdiff jones.export jones.names \x1b[0m"; \
+		else rm -f jones.export; fi
+
 
 %.names:
 	touch $@

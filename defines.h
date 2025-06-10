@@ -18,6 +18,7 @@
 	#define STR_DOWN  "" // 'v' 0x1A
 	
 	#define PROMPT STR_RIGHT
+	#define PROMPTcomp STR_RIGHT STR_2MORE
 #elif OUTPUT_TARGET == OUTPUT_TARGET_terminal
 	#define STR_2LESS "«" //0xC2 0xAB);//'«'
 	#define STR_2MORE "»" // 0xC2 0xBB);//'»'
@@ -27,6 +28,7 @@
 	#define STR_DOWN  "v" // 'v' 0x1A
 	
 	#define PROMPT STR_RIGHT
+	#define PROMPTcomp STR_RIGHT STR_2MORE
 #else
 	#warning "Unknown target OUTPUT_TARGET"
 #endif

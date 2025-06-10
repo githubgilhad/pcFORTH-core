@@ -10,4 +10,5 @@ build
 build-*
 tags
 traceback.log
-dump.bin
+dump.bin*
+version.h

@@ -1,52 +1,33 @@
 ;/* vim: set filetype=asm noexpandtab fileencoding=utf-8 nomodified nowrap textwidth=270 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\:|- list: */
 
 
-DEFWORD w_quit,0,"QUIT",f_docol          // 000001 	: QUIT						\ DEFWORD w_quit,0,"QUIT",f_docol ( "quit" )
-	.long w_interpret_cw             // 000002 		INTERPRET				\	.long w_interpret_cw
-	.long w_branch_cw                // 000003 		BRANCH					\	.long w_branch_cw
-	.long -8                         // 000004 		\'-8					\ .long -8
-	.long w_exit_cw                  // 000005 		;
+DEFWORD w_doubletick,0,"''",f_docol      // 000001 	: '' WORD FIND h2cw ;
+	.long w_word_cw                 
+	.long w_find_cw                 
+	.long w_h2cw_cw                 
+	.long w_exit_cw                 
 
-DEFWORD w_HIDE,0,"HIDE",f_docol          // 000007 	: HIDE						\ DEFWORD w_hide, 0, "HIDE", f_docol		; HIDE WORD hide/unhide the word
-	.long w_word_cw                  // 000008 		WORD FIND HIDDEN ;			\	.long w_word_cw,w_find_cw,w_hidden_cw,w_exit_cw
+DEFWORD w_HIDE,0,"HIDE",f_docol          // 000002 	: HIDE WORD FIND HIDDEN ;
+	.long w_word_cw                 
 	.long w_find_cw                 
 	.long w_hidden_cw               
 	.long w_exit_cw                 
 
-DEFWORD w_colon,0,":",f_docol            // 000010 	: : ( "colon" )					\ DEFWORD w_colon,0,":",f_docol
-	.long w_word_cw                  // 000011 		WORD CREATE				\	.long w_word_cw, w_create_cw			; create header
-	.long w_create_cw               
-	.long w_lit2_cw                  // 000012 		LIT2 \'f_docol ,			\	.long w_lit2_cw, f_docol, w_comma_cw		; fill CW
-	.long f_docol                   
-	.long w_comma_cw                
-	.long var_LAST_cw                // 000013 		LAST D@ HIDDEN				\	.long var_LAST_cw, w_DoubleAt_cw, w_hidden_cw	; hide until done
-	.long w_DoubleAt_cw             
-	.long w_hidden_cw               
-	.long w_right_brac_cw            // 000014 		] ;					\	.long w_right_brac_cw, w_exit_cw		; go to conpile
-	.long w_exit_cw                 
-
-DEFWORD w_semicol,FLG_IMMEDIATE,";",f_docol // 000016 	: ; ( "semicol" ) IMMEDIATE			\ DEFWORD w_semicol,FLG_IMMEDIATE,";",f_docol
-	.long w_lit2_cw                  // 000017 		LIT2 \'w_exit_cw ,			\	.long w_lit2_cw, w_exit_cw, w_comma_cw		; end word
-	.long w_exit_cw                 
-	.long w_comma_cw                
-	.long var_LAST_cw                // 000018 		LAST D@ HIDDEN				\	.long var_LAST_cw, w_DoubleAt_cw, w_hidden_cw	; unhide it
-	.long w_DoubleAt_cw             
-	.long w_hidden_cw               
-	.long w_left_brac_cw             // 000019 		[ ;					\	.long w_left_brac_cw, w_exit_cw			; back to immediate
-	.long w_exit_cw                 
-
-DEFWORD w_IF,FLG_IMMEDIATE,"IF",f_docol  // 000021 	: IF IMMEDIATE					\ DEFWORD w_if, FLG_IMMEDIATE, "IF", f_docol		; do if not zero
-	.long w_tick_cw                  // 000022 		' 0BRANCH ,				\	.long w_tick_cw, w_0branch_cw,w_comma_cw	; if zero, branch
+DEFWORD w_IF,FLG_IMMEDIATE,"IF",f_docol  // 000003 	: IF IMMEDIATE ' 0BRANCH , HERE D@ LIT \'0x00000000 LIT \'0x00000000 , ;
+	.long w_tick_cw                 
 	.long w_0branch_cw              
 	.long w_comma_cw                
-	.long var_HERE_cw                // 000023 		HERE D@ 0 ,				\	.long var_HERE_cw, w_DoubleAt_cw, w_lit2_cw,0,w_comma_cw	; save this pos, fill 0 for now
+	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
-	.long w_lit2_cw, 0              
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000000                
 	.long w_comma_cw                
-	.long w_exit_cw                  // 000024 		;					\	.long w_exit_cw
+	.long w_exit_cw                 
 
-DEFWORD w_FI,FLG_IMMEDIATE,"FI",f_docol  // 000026 	: FI IMMEDIATE					\ DEFWORD w_fi, FLG_IMMEDIATE, "FI", f_docol		; fi - end of IF
-	.long w_dup_D_cw                 // 000027 		DUP2 HERE D@ SWAP2 -D SWAP2 !D ;	\	.long w_dup_D_cw, var_HERE_cw, w_DoubleAt_cw, w_swap_D_cw, w_minus_D_cw, w_swap_D_cw,w_StoreDouble_cw,w_exit_cw
+DEFWORD w_FI,FLG_IMMEDIATE,"FI",f_docol  // 000004 	: FI IMMEDIATE DUP2 HERE D@ SWAP2 -D SWAP2 !D ;
+	.long w_dup_D_cw                
 	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
 	.long w_swap_D_cw               
@@ -55,100 +36,91 @@ DEFWORD w_FI,FLG_IMMEDIATE,"FI",f_docol  // 000026 	: FI IMMEDIATE					\ DEFWORD
 	.long w_StoreDouble_cw          
 	.long w_exit_cw                 
 
-DEFWORD w_THEN,FLG_IMMEDIATE,"THEN",f_docol // 000029 	: THEN IMMEDIATE				\ DEFWORD w_then, FLG_IMMEDIATE, "THEN", f_docol		; fi - end of IF
-	.long w_FI_cw                    // 000030 		FI ;					\	.long w_fi_cw, w_exit_cw
-	.long w_exit_cw                 
-
-DEFWORD w_ELSE,FLG_IMMEDIATE,"ELSE",f_docol // 000032 	: ELSE IMMEDIATE				\ DEFWORD w_else, FLG_IMMEDIATE, "ELSE", f_docol		; else do this
-	.long w_tick_cw                  // 000033 		' BRANCH ,				\	.long w_tick_cw, w_branch_cw,w_comma_cw		; like in IF, but branch everytime
-	.long w_branch_cw               
-	.long w_comma_cw                
-	.long var_HERE_cw                // 000034 		HERE D@ 0 ,				\	.long var_HERE_cw, w_DoubleAt_cw, w_lit2_cw, 0,w_comma_cw	; save this pos, fill 0 for now
-	.long w_DoubleAt_cw             
-	.long w_lit2_cw, 0              
-	.long w_comma_cw                
-	.long w_swap_D_cw                // 000035 		SWAP2 FI ;				\	.long w_swap_D_cw, w_fi_cw, w_exit_cw		; swap this and IFs address and fill it like FI
+DEFWORD w_THEN,FLG_IMMEDIATE,"THEN",f_docol // 000005 	: THEN IMMEDIATE FI ;
 	.long w_FI_cw                   
 	.long w_exit_cw                 
 
-DEFWORD w_BEGIN,FLG_IMMEDIATE,"BEGIN",f_docol // 000037 	: BEGIN IMMEDIATE				\	DEFWORD w_begin, FLG_IMMEDIATE, "BEGIN", f_docol	; BEGIN loop-part condition UNTIL
-	.long var_HERE_cw                // 000038 		HERE D@ ;				\	.long var_HERE_cw, w_DoubleAt_cw, w_exit_cw
-	.long w_DoubleAt_cw             
-	.long w_exit_cw                 
-
-DEFWORD w_UNTIL,FLG_IMMEDIATE,"UNTIL",f_docol // 000040 	: UNTIL IMMEDIATE 				\ DEFWORD w_until, FLG_IMMEDIATE, "UNTIL", f_docol	; BEGIN loop-part condition UNTIL
-	.long w_tick_cw                  // 000041 		' 0BRANCH ,				\	.long w_tick_cw, w_0branch_cw,w_comma_cw
-	.long w_0branch_cw              
-	.long w_comma_cw                
-	.long var_HERE_cw                // 000042 		HERE D@ -D ,				\	.long var_HERE_cw, w_DoubleAt_cw, w_minus_D_cw, w_comma_cw
-	.long w_DoubleAt_cw             
-	.long w_minus_D_cw              
-	.long w_comma_cw                
-	.long w_exit_cw                  // 000043 		;					\	.long w_exit_cw
-
-DEFWORD w_WHILE,FLG_IMMEDIATE,"WHILE",f_docol // 000045 	: WHILE IMMEDIATE				\ DEFWORD w_while, FLG_IMMEDIATE, "WHILE", f_docol	; BEGIN condition WHILE loop-part REPEAT
-	.long w_IF_cw                    // 000046 		IF ;					\	.long w_if_cw,w_exit_cw
-	.long w_exit_cw                 
-
-DEFWORD w_REPEAT,FLG_IMMEDIATE,"REPEAT",f_docol // 000048 	: REPEAT IMMEDIATE 				\ BEGIN condition WHILE loop-part REPEAT
-	.long w_tick_cw                  // 000049 		' BRANCH ,				\ compile BRANCH
+DEFWORD w_ELSE,FLG_IMMEDIATE,"ELSE",f_docol // 000006 	: ELSE IMMEDIATE ' BRANCH , HERE D@ LIT \'0x00000000 , SWAP2 FI ;
+	.long w_tick_cw                 
 	.long w_branch_cw               
 	.long w_comma_cw                
-	.long w_swap_D_cw                // 000050 		SWAP2					\ get the original offset (from BEGIN)
-	.long var_HERE_cw                // 000051 		HERE D@ -D ,				\ and compile it after BRANCH
+	.long var_HERE_cw               
+	.long w_DoubleAt_cw             
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_comma_cw                
+	.long w_swap_D_cw               
+	.long w_FI_cw                   
+	.long w_exit_cw                 
+
+DEFWORD w_BEGIN,FLG_IMMEDIATE,"BEGIN",f_docol // 000007 	: BEGIN IMMEDIATE HERE D@ ;
+	.long var_HERE_cw               
+	.long w_DoubleAt_cw             
+	.long w_exit_cw                 
+
+DEFWORD w_UNTIL,FLG_IMMEDIATE,"UNTIL",f_docol // 000008 	: UNTIL IMMEDIATE ' 0BRANCH , HERE D@ -D , ;
+	.long w_tick_cw                 
+	.long w_0branch_cw              
+	.long w_comma_cw                
+	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
 	.long w_minus_D_cw              
 	.long w_comma_cw                
-	.long w_dup_D_cw                 // 000052 		DUP2
-	.long var_HERE_cw                // 000053 		HERE D@ SWAP2 -D			\ calculate the offset2
+	.long w_exit_cw                 
+
+DEFWORD w_WHILE,FLG_IMMEDIATE,"WHILE",f_docol // 000009 	: WHILE IMMEDIATE IF ;
+	.long w_IF_cw                   
+	.long w_exit_cw                 
+
+DEFWORD w_REPEAT,FLG_IMMEDIATE,"REPEAT",f_docol // 000010 	: REPEAT IMMEDIATE ' BRANCH , SWAP2 HERE D@ -D , DUP2 HERE D@ SWAP2 -D SWAP2 !D ;
+	.long w_tick_cw                 
+	.long w_branch_cw               
+	.long w_comma_cw                
+	.long w_swap_D_cw               
+	.long var_HERE_cw               
+	.long w_DoubleAt_cw             
+	.long w_minus_D_cw              
+	.long w_comma_cw                
+	.long w_dup_D_cw                
+	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
 	.long w_swap_D_cw               
 	.long w_minus_D_cw              
-	.long w_swap_D_cw                // 000054 		SWAP2 !D ;				\ and back-fill it in the original location
+	.long w_swap_D_cw               
 	.long w_StoreDouble_cw          
 	.long w_exit_cw                 
 
-DEFWORD w_FORGET,0,"FORGET",f_docol      // 000056 	: FORGET					\ DEFWORD w_forget,0,"FORGET",f_docol			; forget word (and all after)
-	.long w_word_cw                  // 000057 		WORD FIND				\	.long w_word_cw, w_find_cw
+DEFWORD w_FORGET,0,"FORGET",f_docol      // 000011 	: FORGET WORD FIND DUP2 ISNULL 0BRANCH \'0x0000000C DROP2 RETURN DUP2 D@ LAST !D HERE !D ;
+	.long w_word_cw                 
 	.long w_find_cw                 
-                                         // 000058 	\	DUP2 0x800000 ==D IF EXIT FI		\    check, if the WORD exist 	 \ cannot use IMMEDIATE words in asm.compile
-                                         // 000059 	\	DUP2 0x800000 <>D 
-                                         // 000060 	\	0BRANCH \'3 DROP2 RETURN		\ better check
-	.long w_dup_D_cw                 // 000061 		DUP2 ISNULL 
+	.long w_dup_D_cw                
 	.long w_isnull_cw               
-	.long w_0branch_cw               // 000062 		0BRANCH \'0x0C DROP2 RETURN		\ better check for NULLs
-	.long 0x0C                      
+	.long w_0branch_cw              
+	.long 0x0000000C                
 	.long w_drop_D_cw               
 	.long w_return_cw               
-	.long w_dup_D_cw                 // 000063 		DUP2 D@ LAST !D				\ set LAST header to value of next field
+	.long w_dup_D_cw                
 	.long w_DoubleAt_cw             
 	.long var_LAST_cw               
 	.long w_StoreDouble_cw          
-	.long var_HERE_cw                // 000064 		HERE !D ;				\ free RAM memory
+	.long var_HERE_cw               
 	.long w_StoreDouble_cw          
 	.long w_exit_cw                 
 
-DEFWORD w_ascii,0,"ascii",f_docol        // 000066 	: ascii 					\ ( -- ) emits 00..FF chars
-	.long w_lit_cw                   // 000067 		LIT \'0x0				\ loop variable
-	.long 0x0                       
-                                         // 000068 							\ BEGIN - target for 0BRANCH
-	.long w_dup_cw                   // 000069 		DUP EMIT 				\ EMIT current char
-	.long w_emit_cw                 
-	.long w_lit_cw                   // 000070 		LIT \'0x01 +				\ i++
-	.long 0x01                      
-	.long w_plus_cw                 
-	.long w_dup_cw                   // 000071 		DUP LIT \'0x0100 - 0= 			\ ? equal to 256?
+DEFWORD w_ascii,0,"ascii",f_docol        // 000012 	: ascii LIT \'0x00000000 DUP EMIT LIT \'0x00000001 + DUP LIT \'0x00000100 - 0= 0BRANCH \'0xFFFFFFD4 DROP ;
 	.long w_lit_cw                  
-	.long 0x0100                    
+	.long 0x00000000                
+	.long w_dup_cw                  
+	.long w_emit_cw                 
+	.long w_lit_cw                  
+	.long 0x00000001                
+	.long w_plus_cw                 
+	.long w_dup_cw                  
+	.long w_lit_cw                  
+	.long 0x00000100                
 	.long w_minus_cw                
 	.long w_zero_cw                 
-	.long w_0branch_cw               // 000072 		0BRANCH \'0xFFFFFFD4 			\ if no, repeat (branch to BEGIN)
+	.long w_0branch_cw              
 	.long 0xFFFFFFD4                
-	.long w_drop_cw                  // 000073 		DROP ;					\ cleanup
-	.long w_exit_cw                 
-
-DEFWORD w_doubletick,0,"''",f_docol      // 000074 	: '' WORD FIND h2cw ;				\ ( "doubletick" )
-	.long w_word_cw                 
-	.long w_find_cw                 
-	.long w_h2cw_cw                 
+	.long w_drop_cw                 
 	.long w_exit_cw                 

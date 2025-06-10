@@ -15,11 +15,13 @@ glob_stat=0
 depth=0
 lineno=0
 direct_read=False
+parser=None
 
 def parse_args():
+	global parser
 	parser = argparse.ArgumentParser(description="Translate FORTH definitions to assembler code.")
-	parser.add_argument("-s","--source", nargs="?", default="words.4th", help="source file to translate (words.4th)")
-	parser.add_argument("-o", "--outfile", nargs="?", default="words.inc", help="output file to create (words.inc)" )
+	parser.add_argument("-s","--source", nargs="?", help="source file to translate (words.4int)")
+	parser.add_argument("-o", "--outfile", nargs="?", help="output file to create (words.inc)" )
 	parser.add_argument("-t", "--translatefile", nargs="*", help="file with name pairs ( forth C )" )
 	parser.add_argument("asmfiles", nargs="*", help="One or more assembler files with known words (asm.S asm1.S asm2.S ...)")
 	parser.add_argument("-v", "--verbose", action="store_true")
@@ -289,13 +291,14 @@ def main():
 
 	if args.verbose:
 		print( f"Processing: {args.source} -> {args.outfile}")
-	with open(args.source, encoding='utf-8') as f:
-		source_lines = f.readlines()
-		with  open(args.outfile, 'w',  encoding='utf-8') as fout:
-			fout.write(";/* vim: set filetype=asm noexpandtab fileencoding=utf-8 nomodified nowrap textwidth=270 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\\:|- list: */\n\n")
-			for a_lineno, line in enumerate(source_lines):
-				lineno = a_lineno+1
-				depth = process(line.rstrip('\n'), depth, fout);
+	if args.source:
+		with open(args.source, encoding='utf-8') as f:
+			source_lines = f.readlines()
+			with  open(args.outfile, 'w',  encoding='utf-8') as fout:
+				fout.write(";/* vim: set filetype=asm noexpandtab fileencoding=utf-8 nomodified nowrap textwidth=270 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\\:|- list: */\n\n")
+				for a_lineno, line in enumerate(source_lines):
+					lineno = a_lineno+1
+					depth = process(line.rstrip('\n'), depth, fout);
 	if args.verbose:
 		print( f"known words so far: {len(known)}")
 	if args.export:
@@ -303,7 +306,8 @@ def main():
 			for n,v in sorted(known.items()):
 				fout.write(f"{n:<16}	{v}\n")
 		print(f"name -> nick pairs exported to: {args.export}")
-
+	if not ( args.source or args.asmfiles ):
+		parser.print_help()
 
 
 if __name__ == "__main__":
