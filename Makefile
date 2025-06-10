@@ -98,11 +98,11 @@ version: $(VERSION_HEADER)
 # }}}
 
 
-asm.S: words.inc jones.inc Makefile
-words.inc: words.4th words.names Makefile
+$(BUILD_DIR)/asm.o: words.inc jones.inc 
+words.inc: words.4th words.names asm.S Makefile
 	./forth2inc.py -v  -o $@ -e words.export -t words.names -s words.4th asm.S
 
-jones.inc: jones.4th words.inc jones.names Makefile
+jones.inc: jones.4th words.inc jones.names asm.S Makefile
 	./forth2inc.py -v  -o $@ -e jones.export -t jones.names -s jones.4th words.inc asm.S
 	@echo "### You may want to do this: comm -1 -3 words.names jones.export >jones.names"
 

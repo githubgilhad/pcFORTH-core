@@ -14,6 +14,7 @@ glob_middle=""
 glob_stat=0
 depth=0
 lineno=0
+direct_read=False
 
 def parse_args():
 	parser = argparse.ArgumentParser(description="Translate FORTH definitions to assembler code.")
@@ -120,13 +121,14 @@ def out( left, right):
 
 def ToAscii(s):
 	return s.replace('\\', '\\\\').replace('"', '\\"')
-
 def do_token(token,left,right,line):
-	global glob_stat, glob_imm, known, fout, lineno
-	token.replace('\\(','(')
+	global glob_stat, glob_imm, known, fout, lineno, direct_read
+#	token.replace('\\(','(')
 #	print(f"{lineno}: [{token}] [{line}]")
+	direct_read=False
 	if (glob_stat == 0) and (token==':'):
 		glob_stat=1
+		direct_read=True
 		return (left,right)
 	if len(left):
 		out(left, right)
@@ -136,7 +138,8 @@ def do_token(token,left,right,line):
 		print(f"COMMAND {token} in line [{line}] at {lineno} !!!")
 		return(left,right)
 	if (glob_stat == 1):
-		nick = extract_nick_from_comment(line)
+#		nick = extract_nick_from_comment(line)
+		nick = None
 		imm = extract_immediate_from_line(line)
 		if not nick:
 			if  token in known:
@@ -203,7 +206,7 @@ def process(line, depth, fout):
 	code=code.strip()
 	i=0
 	while (i<len(code)):
-		if depth or (comm and (code[i:i+2] == '( ')):
+		if (not direct_read) and (depth or (comm and (code[i:i+2] == '( '))):
 			if code[i:i+2] == '( ':
 				depth +=1
 				i+=2

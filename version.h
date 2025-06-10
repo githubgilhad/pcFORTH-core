@@ -1,4 +1,4 @@
 #pragma once
-#define VERSION_STRING "v0.1.0-1-g6d76b41++"
-#define VERSION_COMMIT "6d76b41"
-#define VERSION_MESSAGE "Many fixes, memdump traceback export_all"
+#define VERSION_STRING "v0.1.0-2-g8196f58++"
+#define VERSION_COMMIT "8196f58"
+#define VERSION_MESSAGE "improved export"

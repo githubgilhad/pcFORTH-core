@@ -1,4 +1,3 @@
-(( w_newBracket
 '"'             	w_quoted_quote
 '('             	w_quoted_open
 ')'             	w_quoted_close
@@ -12,6 +11,7 @@
 'A'             	w_quoted_A
 '\n'            	w_quoted_slash_n
 '|'             	w_quoted_pipe
+(               	w_Bracket
 +TO             	w_plusTO
 +TO2            	w_plusTO2
 ."              	w_dotquote

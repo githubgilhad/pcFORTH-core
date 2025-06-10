@@ -483,7 +483,7 @@ DEFWORD w_left_brac,	FLG_IMMEDIATE,	"[",	f_left_brac		// [ goes to immediate mod
 DEFWORD w_right_brac,	0,	"]",	f_right_brac			// ] goes to compile mode
 DEFWORD w_find, 	0,	"FIND",	f_find				// WORD FIND return Addr_of_header (or 0 0 )
 DEFWORD w_hidden,	0,	"HIDDEN",	f_hidden		// Addr_of_header HIDE hide/unhide the word
-DEFWORD w_tick, 	0,	"'",	f_tick				// push CW_address of next word to stack (and skip it)
+DEFWORD w_tick, 	FLG_ARG,	"'",	f_tick				// push CW_address of next word to stack (and skip it)
 DEFWORD w_immediate,	FLG_IMMEDIATE,	"IMMEDIATE",	f_immediate	//  IMMEDIATE make the  last word immediate
 DEFWORD w_zero, 	0,	"0=",	f_zero				// true if zero
 DEFWORD w_notzero,  	0,	"0<>",	f_notzero			// true if not zero
@@ -530,7 +530,7 @@ DEFWORD w_CHAR,		0,	"CHAR",	f_CHAR				// ( -- C) read one char
 # -------------------------------------------------------------------------------- more FORTH words
 
 #include "words.inc"
-#include "jones.inc"
+//	#include "jones.inc"
 
 
 	.global val_of_w_exit_cw, val_of_f_docol

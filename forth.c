@@ -866,7 +866,14 @@ void file_do_export(FILE *f, DOUBLE_t h, DOUBLE_t top) {	// {{{
 		if (flags & FLG_ARG) {
 			cw+=4;
 			val=B4at(cw);
-			fprintf(f," \\'0x%08x ", val);
+			DOUBLE_t hh=cw2h(val);
+			if (hh) {
+				fprintf(f," ");
+				name_to_buf(val);
+				fprintf(f,"%s",buf); 
+			} else {
+				fprintf(f," \\'0x%08x ", val);
+			};
 			val=0;
 		}
 		else if ((flags & FLG_PSTRING) && (B4at(cw+4)<128)) { // too long strings probabely are not arguments
