@@ -310,7 +310,7 @@ dec
 )
 
 ( This is the underlying recursive definition of U. )
-: U.		( u -- )
+: U..		( u -- )
 	BASE @ /MOD	( width rem quot )
 	?DUP IF			( if quotient <> 0 then )
 		RECURSE		( print the quotient )
@@ -339,10 +339,10 @@ dec
 		DUP2 S0 >D
 	WHILE
 		0 2 -D		( move up )
-		DUP2 @ '<' EMIT U. '>' EMIT	( print the stack element )
+		DUP2 @ '<' EMIT U.. '>' EMIT	( print the stack element )
 \		SPACE
 	REPEAT
-\	@ '<' EMIT  U. '>' EMIT SPACE
+\	@ '<' EMIT  U.. '>' EMIT SPACE
 	DROP2 '|' EMIT SPACE
 	BASE C!
 ;
@@ -368,7 +368,7 @@ dec
 	  a negative number of spaces anyway, so it's now safe to call SPACES ... )
 	SPACES
 	( ... and then call the underlying implementation of U. )
-	U.
+	U..
 ;
 
 (
@@ -401,14 +401,14 @@ dec
 		'-' EMIT
 	THEN
 
-	U.
+	U..
 ;
 
 ( Finally we can define word . in terms of .R, with a trailing space. )
 : .. 0 .R SPACE ;
 
 ( The real U., note the trailing space. )
-: U. U. SPACE ;
+: U. U.. SPACE ;
 
 ( ? fetches the integer at an address and prints it. )
 : ? ( addr -- ) @ . ;

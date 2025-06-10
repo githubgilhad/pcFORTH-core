@@ -3,8 +3,11 @@
 *.swp
 *.elf
 *.elf.dis
+*.export
 tmp
 old
 build
 build-*
 tags
+traceback.log
+dump.bin

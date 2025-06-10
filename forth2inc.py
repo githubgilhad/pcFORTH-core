@@ -19,8 +19,8 @@ def parse_args():
 	parser = argparse.ArgumentParser(description="Translate FORTH definitions to assembler code.")
 	parser.add_argument("-s","--source", nargs="?", default="words.4th", help="source file to translate (words.4th)")
 	parser.add_argument("-o", "--outfile", nargs="?", default="words.inc", help="output file to create (words.inc)" )
-	parser.add_argument("-t", "--translatefile", nargs="+", help="file with name pairs ( forth C )" )
-	parser.add_argument("asmfiles", nargs="+", help="One or more assembler files with known words (asm.S asm1.S asm2.S ...)")
+	parser.add_argument("-t", "--translatefile", nargs="*", help="file with name pairs ( forth C )" )
+	parser.add_argument("asmfiles", nargs="*", help="One or more assembler files with known words (asm.S asm1.S asm2.S ...)")
 	parser.add_argument("-v", "--verbose", action="store_true")
 	parser.add_argument("-e", "--export", nargs="?", help="exports name pairs to this file (eg. translate.txt)")
 	parser.add_argument("-c", "--col", type=int, default=40, help="Column for comments (default: 40)")
@@ -29,12 +29,15 @@ def parse_args():
 def load_translations(asmfile):
 	global known
 	patternTXT = re.compile(r'^\s*([^\s]*)\s*([^\s]*)\s*')
-	with open(asmfile, encoding='utf-8') as f:
-		for line in f:
-			m = patternTXT.search(line)
-			if m:
-				name, label = m.groups()
-				known[name] = label
+	try:
+		with open(asmfile, encoding='utf-8') as f:
+			for line in f:
+				m = patternTXT.search(line)
+				if m:
+					name, label = m.groups()
+					known[name] = label
+	except FileNotFoundError:
+		print(f"FileNotFoundError {asmfile} - ignoring")
 
 def load_known_words(asmfile):
 	global known
@@ -43,31 +46,34 @@ def load_known_words(asmfile):
 	patternDC1 = re.compile(r'^\s*DEFCONST1\s+(\w+\\?)')
 	patternDC2 = re.compile(r'^\s*DEFCONST2\s+(\w+\\?)')
 	patternPORT = re.compile(r'^\s*PORT\s+(\w+\\?),')
-	with open(asmfile, encoding='utf-8') as f:
-		for line in f:
-			m = patternDW.search(line)
-			if m:
-				label, name = m.groups()
-				if not '\\' in name:
-					known[name] = label
-			m = patternDV.search(line)
-			if m:
-				name, = m.groups()
-				known[name] = "var_"+name
-			m = patternDC1.search(line)
-			if m:
-				name, = m.groups()
-				known[name] = "const_"+name
-			m = patternDC2.search(line)
-			if m:
-				name, = m.groups()
-				if not '\\' in name:
+	try:
+		with open(asmfile, encoding='utf-8') as f:
+			for line in f:
+				m = patternDW.search(line)
+				if m:
+					label, name = m.groups()
+					if not '\\' in name:
+						known[name] = label
+				m = patternDV.search(line)
+				if m:
+					name, = m.groups()
+					known[name] = "var_"+name
+				m = patternDC1.search(line)
+				if m:
+					name, = m.groups()
 					known[name] = "const_"+name
-			m = patternPORT.search(line)
-			if m:
-				name, = m.groups()
-				for base in ("PORT","PIN","DDR"):
-					known[base+name] = "const_"+base+name
+				m = patternDC2.search(line)
+				if m:
+					name, = m.groups()
+					if not '\\' in name:
+						known[name] = "const_"+name
+				m = patternPORT.search(line)
+				if m:
+					name, = m.groups()
+					for base in ("PORT","PIN","DDR"):
+						known[base+name] = "const_"+base+name
+	except FileNotFoundError:
+		print(f"FileNotFoundError {asmfile} - ignoring")
 
 def strip_forth_comments(line,nest=0):
 	result = ''
@@ -133,7 +139,10 @@ def do_token(token,left,right,line):
 		nick = extract_nick_from_comment(line)
 		imm = extract_immediate_from_line(line)
 		if not nick:
-			nick = "w_"+token
+			if  token in known:
+				nick=known[token]
+			else:
+				nick = "w_"+token
 		else:
 			nick = "w_"+nick
 		fout.write("\n")
@@ -228,6 +237,8 @@ def process(line, depth, fout):
 			continue
 		if code[i:i+2] == '\\ ':
 			break
+		if code[i:i+2] == '\\\t':
+			break
 		if code[i].isspace():
 			i += 1
 			continue
@@ -245,8 +256,8 @@ def process(line, depth, fout):
 #			i += 1
 #			continue
 		else:
-			if code[i] == '\\':
-				i += 1
+#			if code[i] == '\\':
+#				i += 1
 			start = i
 			while i < len(code) and not code[i].isspace():
 				i += 1
@@ -259,6 +270,12 @@ def process(line, depth, fout):
 def main():
 	global args,depth,fout,known,lineno
 	args = parse_args()
+	for asmfile in args.asmfiles:
+		if args.verbose:
+			print( f"Importing {asmfile}")
+		load_known_words(asmfile)	# add to known
+		if args.verbose:
+			print( f"known words so far: {len(known)}")
 	if args.translatefile:
 		for tr in args.translatefile:
 			if args.verbose:
@@ -266,12 +283,6 @@ def main():
 			load_translations(tr)
 			if args.verbose:
 				print( f"known words so far: {len(known)}")
-	for asmfile in args.asmfiles:
-		if args.verbose:
-			print( f"Importing {asmfile}")
-		load_known_words(asmfile)	# add to known
-		if args.verbose:
-			print( f"known words so far: {len(known)}")
 
 	if args.verbose:
 		print( f"Processing: {args.source} -> {args.outfile}")
@@ -286,7 +297,7 @@ def main():
 		print( f"known words so far: {len(known)}")
 	if args.export:
 		with  open(args.export, 'w',  encoding='utf-8') as fout:
-			for n,v in known.items():
+			for n,v in sorted(known.items()):
 				fout.write(f"{n:<16}	{v}\n")
 		print(f"name -> nick pairs exported to: {args.export}")
 

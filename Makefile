@@ -29,6 +29,8 @@ OBJ_S := $(patsubst %.S, $(BUILD_DIR)/%.o, $(SRC_S))
 OBJS := $(OBJ_C) $(OBJ_CPP) $(OBJ_S)
 DEPS := $(OBJS:.o=.d)
 
+$(shell ctags -R . )
+
 .PHONY: all clean help
 
 all: $(TARGET)
@@ -96,9 +98,16 @@ version: $(VERSION_HEADER)
 # }}}
 
 
-asm.S: words.inc
-words.inc: words.4th
-	./forth2inc.py
+asm.S: words.inc jones.inc Makefile
+words.inc: words.4th words.names Makefile
+	./forth2inc.py -v  -o $@ -e words.export -t words.names -s words.4th asm.S
+
+jones.inc: jones.4th words.inc jones.names Makefile
+	./forth2inc.py -v  -o $@ -e jones.export -t jones.names -s jones.4th words.inc asm.S
+	@echo "### You may want to do this: comm -1 -3 words.names jones.export >jones.names"
+
+%.names:
+	touch $@
 
 clean:
 	$(RM) -r $(BUILD_DIR) $(TARGET) $(TARGET).dis

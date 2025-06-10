@@ -48,6 +48,8 @@ char read_char() {
 #error undefined
 #endif
 
+char buf[32];	// temporary buffer - stack eating structures cannot be in NEXT-chained functions, or stack will overflow !!!
+
 /** {{{ Intro
  * Lets start programming FORTH
  * My idea is
@@ -793,6 +795,7 @@ void f_bin(){	// {{{
 DOUBLE_t cw2h(DOUBLE_t cw) {	// {{{ codeword address to head address
 //	TRACE("cw2h");
 	if (!cw) return 0;
+	if (!is_in_range(cw)) return 0;
 	uint8_t i =0;
 	cw--;
 	while ((i<33 ) && (i!=B1at(cw))) {i++;cw--;};
@@ -820,6 +823,17 @@ void f_h2da() {	// {{{ // ( h -- da ) convert head address to data address
 	push2(h);
 	NEXT;
 }	// }}}
+uint8_t name_to_buf(DOUBLE_t cw) {	// {{{ fill name into global buf codeword - return flags
+	DOUBLE_t h=cw2h(cw);
+	if (!h) {ERROR("Not a word");strcpy_P(buf,F(" Not a word "));return 0;};
+	uint8_t flags,len;
+	flags=B1at(h+4);
+	len=B1at(h+5);
+	uint8_t i=0;
+	for (; i<len;i++) buf[i]=B1at(h+6+i);
+	buf[i]=0;
+	return flags;
+}	// }}}
 #if defined(__PC__)
 void f_memdump() {	// {{{ // ( daddr len -- ) dump data to file
 	INFO("memdump");
@@ -829,15 +843,6 @@ void f_memdump() {	// {{{ // ( daddr len -- ) dump data to file
 	memdump(addr,len,fname);
 	NEXT;
 }	// }}}
-uint8_t file_export_name(FILE *f, DOUBLE_t cw) {	// {{{ export name and address from codeword - return flags
-	DOUBLE_t h=cw2h(cw);
-	if (!h) {fprintf(f," Not a word ");return 0;};
-	uint8_t flags,len;
-	flags=B1at(h+4);
-	len=B1at(h+5);
-	for (uint8_t i=0; i<len;i++) fprintf(f,"%c",B1at(h+6+i));
-	return flags;
-}	// }}}
 void file_do_export(FILE *f, DOUBLE_t h, DOUBLE_t top) {	// {{{ 
 	DOUBLE_t cw=h+5;
 	cw+=1+B1at(cw);
@@ -845,7 +850,8 @@ void file_do_export(FILE *f, DOUBLE_t h, DOUBLE_t top) {	// {{{
 	uint8_t flags;
 	if (!h) {fprintf(f," Not a word ");return;};
 	fprintf(f, ": ");
-	flags = file_export_name(f,cw);
+	flags = name_to_buf(cw);
+	fprintf(f,"%s",buf);
 	if (val_of_f_docol != B3at(cw)) {
 		fprintf(f," NOT_DOCOL definition ");
 		return;	// neumim rozepsat
@@ -855,7 +861,8 @@ void file_do_export(FILE *f, DOUBLE_t h, DOUBLE_t top) {	// {{{
 		val=B4at(cw);
 //		if (val == val_of_w_exit_cw) break;
 		fprintf(f," ");
-		flags=file_export_name(f,val);
+		flags = name_to_buf(val);
+		fprintf(f,"%s",buf);
 		if (flags & FLG_ARG) {
 			cw+=4;
 			val=B4at(cw);
@@ -1001,21 +1008,6 @@ void f_show() {	// {{{ ; ' WORD show - try to show definition of WORD
 	show(cw);
 	NEXT;
 }	// }}}
-uint8_t export_name(DOUBLE_t cw) {	// {{{ export name and address from codeword - return flags
-	DOUBLE_t h=cw2h(cw);
-	if (!h) {ERROR("Not a word");return 0;};
-	uint8_t flags,len;
-	flags=B1at(h+4);
-	len=B1at(h+5);
-//	if (flags & FLG_HIDDEN) write_str(F("HIDDEN "));
-//	if (flags & FLG_IMMEDIATE) write_str(F("IMMEDIATE "));
-//	if (flags & FLG_ARG) write_str(F("ARG "));
-//	write_str(F("len: "));write_hex8(len);write_str(F(", name: "));
-//	write_str(F(STR_2LESS));
-	for (uint8_t i=0; i<len;i++) write_char(B1at(h+6+i));
-//	write_str(F(STR_2MORE));
-	return flags;
-}	// }}}
 void do_export(DOUBLE_t h, DOUBLE_t top) {	// {{{ ; ' WORD export - try to export definition of WORD
 	TRACE("export");
 //	DOUBLE_t cw=h2cw(h);
@@ -1026,7 +1018,8 @@ void do_export(DOUBLE_t h, DOUBLE_t top) {	// {{{ ; ' WORD export - try to expor
 	if (!h) {ERROR("Not a word");return;};
 	write_eoln();
 	write_str(F(": "));
-	flags = export_name(cw);
+	flags = name_to_buf(cw);
+	write_str(buf);
 	if (flags & FLG_IMMEDIATE) write_str(F(" IMMEDIATE"));
 	if (val_of_f_docol != B3at(cw)) {
 		write_str(F(" NOT_DOCOL definition "));
@@ -1037,12 +1030,20 @@ void do_export(DOUBLE_t h, DOUBLE_t top) {	// {{{ ; ' WORD export - try to expor
 		val=B4at(cw);
 		if (val == val_of_w_exit_cw) break;
 		write_char(' ');
-		flags=export_name(val);
+		flags=name_to_buf(val);
+		write_str(buf);
 		if (flags & FLG_ARG) {
 			cw+=4;
 			val=B4at(cw);
-			write_str(F(" \\'0x"));
-			write_hex32(val);
+			DOUBLE_t hh=cw2h(val);
+			if (hh) {
+				write_char(' ');
+				name_to_buf(val);
+				write_str(buf);
+			} else {
+				write_str(F(" \\'0x"));
+				write_hex32(val);
+			};
 			val=0;
 		}
 		else if ((flags & FLG_PSTRING) && (B4at(cw+4)<128)) { // too long strings probabely are not arguments
@@ -1104,7 +1105,6 @@ void f_word() {	 // {{{ Put address and size of buff to stack
 	push(word_buf_len);
 	NEXT;
 }	// }}}
-	char buf[32];	// stack eating structures cannot be in NEXT-chained functions, or stack will overflow !!!
 void f_docol() {	// {{{
 	TRACE("docol");
 // ERROR("Press ANY key to continue");wait_for_char();

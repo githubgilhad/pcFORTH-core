@@ -1,203 +1,203 @@
 ;/* vim: set filetype=asm noexpandtab fileencoding=utf-8 nomodified nowrap textwidth=270 foldmethod=marker foldmarker={{{,}}} foldcolumn=4 ruler showcmd lcs=tab\:|- list: */
 
 
-DEFWORD w_quoted_open,0,"'('",f_docol    // 000002 	: '('  ( "quoted_open" ) LIT \'0x00000028 ;
-	.long w_lit_cw                  
-	.long 0x00000028                
-	.long w_exit_cw                 
-
-DEFWORD w_quoted_close,0,"')'",f_docol   // 000003 	: ')'  ( "quoted_close" ) LIT \'0x00000029 ;
-	.long w_lit_cw                  
-	.long 0x00000029                
-	.long w_exit_cw                 
-
-DEFWORD w_openBracket,FLG_IMMEDIATE,"((",f_docol // 000004 	: \(  ( "openBracket" ) IMMEDIATE 
-	.long w_lit_cw                   // 000005 		LIT \'0x00000001 
-	.long 0x00000001                
-	.long w_key_cw                   // 000006 		KEY 
-	.long w_dup_cw                   // 000007 		DUP 
-	.long w_quoted_open_cw           // 000008 		'(' 
-	.long w_equal_cw                 // 000009 		= 
-	.long w_0branch_cw               // 000010 		0BRANCH \'0x00000014 
-	.long 0x00000014                
-	.long w_drop_cw                  // 000011 		DROP 
-	.long w_1plus_cw                 // 000012 		1+ 
-	.long w_branch_cw                // 000013 		BRANCH 
-	.long 0x00000018                 // 000014 		\'0x00000018 
-	.long w_quoted_close_cw          // 000015 		')' 
-	.long w_equal_cw                 // 000016 		= 
-	.long w_0branch_cw               // 000017 		0BRANCH \'0x00000008 
-	.long 0x00000008                
-	.long w_1minus_cw                // 000018 		1- 
-	.long w_dup_cw                   // 000019 		DUP 
-	.long w_zero_cw                  // 000020 		0= 
-	.long w_0branch_cw               // 000021 		0BRANCH 
-	.long 0xFFFFFFB8                 // 000022 		\'0xFFFFFFB8 
-	.long w_drop_cw                  // 000023 		DROP 
-	.long w_exit_cw                  // 000024 		;
-
-DEFWORD w_CtoD,0,"C>D",f_docol           // 000025 	: C>D ( "CtoD" ) LIT \'0x00000000 SWAP ;
+DEFWORD w_CtoD,0,"C>D",f_docol           // 000001 	: C>D LIT \'0x00000000 SWAP ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_swap_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_newdiv,0,"/",f_docol           // 000026 	: / ( "newdiv" ) /MOD SWAP DROP ;
+DEFWORD w_newdiv,0,"/",f_docol           // 000002 	: / /MOD SWAP DROP ;
 	.long w_DIVMOD_cw               
 	.long w_swap_cw                 
 	.long w_drop_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_MOD,0,"MOD",f_docol            // 000027 	: MOD ( "MOD" ) /MOD DROP ;
+DEFWORD w_MOD,0,"MOD",f_docol            // 000003 	: MOD /MOD DROP ;
 	.long w_DIVMOD_cw               
 	.long w_drop_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_slash_n,0,"'\\n'",f_docol // 000028 	: '\n' ( "quoted_slash_n" ) LIT \'0x0000000A ;
+DEFWORD w_quoted_slash_n,0,"'\\n'",f_docol // 000004 	: '\n' LIT \'0x0000000A ;
 	.long w_lit_cw                  
 	.long 0x0000000A                
 	.long w_exit_cw                 
 
-DEFWORD w_BL,0,"BL",f_docol              // 000029 	: BL ( "BL" ) LIT \'0x00000020 ;
+DEFWORD w_BL,0,"BL",f_docol              // 000005 	: BL LIT \'0x00000020 ;
 	.long w_lit_cw                  
 	.long 0x00000020                
 	.long w_exit_cw                 
 
-DEFWORD w_CR,0,"CR",f_docol              // 000030 	: CR ( "CR" ) '\n' EMIT ;
+DEFWORD w_CR,0,"CR",f_docol              // 000006 	: CR '\n' EMIT ;
 	.long w_quoted_slash_n_cw       
 	.long w_emit_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_SPACE,0,"SPACE",f_docol        // 000031 	: SPACE ( "SPACE" ) BL EMIT ;
+DEFWORD w_SPACE,0,"SPACE",f_docol        // 000007 	: SPACE BL EMIT ;
 	.long w_BL_cw                   
 	.long w_emit_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_NEGATE,0,"NEGATE",f_docol      // 000032 	: NEGATE ( "NEGATE" ) LIT \'0x00000000 SWAP - ;
+DEFWORD w_NEGATE,0,"NEGATE",f_docol      // 000008 	: NEGATE LIT \'0x00000000 SWAP - ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_swap_cw                 
 	.long w_minus_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_TRUE,0,"TRUE",f_docol          // 000033 	: TRUE ( "TRUE" ) LIT \'0x00000001 ;
+DEFWORD w_TRUE,0,"TRUE",f_docol          // 000009 	: TRUE LIT \'0x00000001 ;
 	.long w_lit_cw                  
 	.long 0x00000001                
 	.long w_exit_cw                 
 
-DEFWORD w_FALSE,0,"FALSE",f_docol        // 000034 	: FALSE ( "FALSE" ) LIT \'0x00000000 ;
+DEFWORD w_FALSE,0,"FALSE",f_docol        // 000010 	: FALSE LIT \'0x00000000 ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_exit_cw                 
 
-DEFWORD w_NOT,0,"NOT",f_docol            // 000035 	: NOT ( "NOT" ) 0= ;
+DEFWORD w_NOT,0,"NOT",f_docol            // 000011 	: NOT 0= ;
 	.long w_zero_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_LITERAL,FLG_IMMEDIATE,"LITERAL",f_docol // 000036 	: LITERAL ( "LITERAL" ) IMMEDIATE ' LIT \'0x0804DD0E , ;
+DEFWORD w_LITERAL,FLG_IMMEDIATE,"LITERAL",f_docol // 000012 	: LITERAL IMMEDIATE ' LIT , , ;
 	.long w_tick_cw                 
 	.long w_lit_cw                  
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_comma_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_colon,0,"':'",f_docol   // 000037 	: ':' ( "quoted_colon" ) LIT \'0x0000003A ;
+DEFWORD w_quoted_colon,0,"':'",f_docol   // 000013 	: ':' LIT \'0x0000003A ;
 	.long w_lit_cw                  
 	.long 0x0000003A                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_semicolon,0,"';'",f_docol // 000038 	: ';' ( "quoted_semicolon" ) LIT \'0x0000003B ;
+DEFWORD w_quoted_semicolon,0,"';'",f_docol // 000014 	: ';' LIT \'0x0000003B ;
 	.long w_lit_cw                  
 	.long 0x0000003B                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_quote,0,"'\"'",f_docol  // 000039 	: '"' ( "quoted_quote" ) LIT \'0x00000022 ;
+DEFWORD w_quoted_open,0,"'('",f_docol    // 000015 	: '(' LIT \'0x00000028 ;
+	.long w_lit_cw                  
+	.long 0x00000028                
+	.long w_exit_cw                 
+
+DEFWORD w_quoted_close,0,"')'",f_docol   // 000016 	: ')' LIT \'0x00000029 ;
+	.long w_lit_cw                  
+	.long 0x00000029                
+	.long w_exit_cw                 
+
+DEFWORD w_quoted_quote,0,"'\"'",f_docol  // 000017 	: '"' LIT \'0x00000022 ;
 	.long w_lit_cw                  
 	.long 0x00000022                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_A,0,"'A'",f_docol       // 000040 	: 'A' ( "quoted_A" ) LIT \'0x00000041 ;
+DEFWORD w_quoted_A,0,"'A'",f_docol       // 000018 	: 'A' LIT \'0x00000041 ;
 	.long w_lit_cw                  
 	.long 0x00000041                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_0,0,"'0'",f_docol       // 000041 	: '0' ( "quoted_0" ) LIT \'0x00000030 ;
+DEFWORD w_quoted_0,0,"'0'",f_docol       // 000019 	: '0' LIT \'0x00000030 ;
 	.long w_lit_cw                  
 	.long 0x00000030                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_minus,0,"'-'",f_docol   // 000042 	: '-' ( "quoted_minus" ) LIT \'0x0000002D ;
+DEFWORD w_quoted_minus,0,"'-'",f_docol   // 000020 	: '-' LIT \'0x0000002D ;
 	.long w_lit_cw                  
 	.long 0x0000002D                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_dot,0,"'.'",f_docol     // 000043 	: '.' ( "quoted_dot" ) LIT \'0x0000002E ;
+DEFWORD w_quoted_dot,0,"'.'",f_docol     // 000021 	: '.' LIT \'0x0000002E ;
 	.long w_lit_cw                  
 	.long 0x0000002E                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_less,0,"'<'",f_docol    // 000044 	: '<' ( "quoted_less" ) LIT \'0x0000003C ;
+DEFWORD w_quoted_less,0,"'<'",f_docol    // 000022 	: '<' LIT \'0x0000003C ;
 	.long w_lit_cw                  
 	.long 0x0000003C                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_more,0,"'>'",f_docol    // 000045 	: '>' ( "quoted_more" ) LIT \'0x0000003E ;
+DEFWORD w_quoted_more,0,"'>'",f_docol    // 000023 	: '>' LIT \'0x0000003E ;
 	.long w_lit_cw                  
 	.long 0x0000003E                
 	.long w_exit_cw                 
 
-DEFWORD w_quoted_pipe,0,"'|'",f_docol    // 000046 	: '|' ( "quoted_pipe" ) LIT \'0x0000007C ;
+DEFWORD w_quoted_pipe,0,"'|'",f_docol    // 000024 	: '|' LIT \'0x0000007C ;
 	.long w_lit_cw                  
 	.long 0x0000007C                
 	.long w_exit_cw                 
 
-DEFWORD w_COMPILE_in_brackets,FLG_IMMEDIATE,"[COMPILE]",f_docol // 000047 	: [COMPILE] ( "COMPILE_in_brackets" ) IMMEDIATE WORD FIND >CFA , ;
+DEFWORD w_COMPILE_in_brackets,FLG_IMMEDIATE,"[COMPILE]",f_docol // 000025 	: [COMPILE] IMMEDIATE WORD FIND >CFA , ;
 	.long w_word_cw                 
 	.long w_find_cw                 
 	.long w_ToCFA_cw                
 	.long w_comma_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_RECURSE,FLG_IMMEDIATE,"RECURSE",f_docol // 000048 	: RECURSE ( "RECURSE" ) IMMEDIATE LAST D@ >CFA , ;
+DEFWORD w_RECURSE,FLG_IMMEDIATE,"RECURSE",f_docol // 000026 	: RECURSE IMMEDIATE LAST D@ >CFA , ;
 	.long var_LAST_cw               
 	.long w_DoubleAt_cw             
 	.long w_ToCFA_cw                
 	.long w_comma_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_AGAIN,FLG_IMMEDIATE,"AGAIN",f_docol // 000049 	: AGAIN ( "AGAIN" ) IMMEDIATE ' BRANCH \'0x0804DD0E HERE D@ -D , ;
+DEFWORD w_AGAIN,FLG_IMMEDIATE,"AGAIN",f_docol // 000027 	: AGAIN IMMEDIATE ' BRANCH , HERE D@ -D , ;
 	.long w_tick_cw                 
 	.long w_branch_cw               
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
 	.long w_minus_D_cw              
 	.long w_comma_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_UNLESS,FLG_IMMEDIATE,"UNLESS",f_docol // 000050 	: UNLESS ( "UNLESS" ) IMMEDIATE ' NOT , IF ;
+DEFWORD w_UNLESS,FLG_IMMEDIATE,"UNLESS",f_docol // 000028 	: UNLESS IMMEDIATE ' NOT , IF ;
 	.long w_tick_cw                 
 	.long w_NOT_cw                  
 	.long w_comma_cw                
 	.long w_IF_cw                   
 	.long w_exit_cw                 
 
-DEFWORD w_NIP,0,"NIP",f_docol            // 000051 	: NIP ( "NIP" ) SWAP DROP ;
+DEFWORD w_newBracket,FLG_IMMEDIATE,"((",f_docol // 000029 	: (( IMMEDIATE LIT \'0x00000001 KEY DUP '(' = 0BRANCH \'0x00000014 DROP 1+ BRANCH \'0x00000018 ')' = 0BRANCH \'0x00000008 1- DUP 0= 0BRANCH \'0xFFFFFFB8 DROP ;
+	.long w_lit_cw                  
+	.long 0x00000001                
+	.long w_key_cw                  
+	.long w_dup_cw                  
+	.long w_quoted_open_cw          
+	.long w_equal_cw                
+	.long w_0branch_cw              
+	.long 0x00000014                
+	.long w_drop_cw                 
+	.long w_1plus_cw                
+	.long w_branch_cw               
+	.long 0x00000018                
+	.long w_quoted_close_cw         
+	.long w_equal_cw                
+	.long w_0branch_cw              
+	.long 0x00000008                
+	.long w_1minus_cw               
+	.long w_dup_cw                  
+	.long w_zero_cw                 
+	.long w_0branch_cw              
+	.long 0xFFFFFFB8                
+	.long w_drop_cw                 
+	.long w_exit_cw                 
+
+DEFWORD w_NIP,0,"NIP",f_docol            // 000030 	: NIP SWAP DROP ;
 	.long w_swap_cw                 
 	.long w_drop_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_NIP2,0,"NIP2",f_docol          // 000052 	: NIP2 ( "NIP2" ) SWAP2 DROP2 ;
+DEFWORD w_NIP2,0,"NIP2",f_docol          // 000031 	: NIP2 SWAP2 DROP2 ;
 	.long w_swap_D_cw               
 	.long w_drop_D_cw               
 	.long w_exit_cw                 
 
-DEFWORD w_TUCK,0,"TUCK",f_docol          // 000053 	: TUCK ( "TUCK" ) SWAP OVER ;
+DEFWORD w_TUCK,0,"TUCK",f_docol          // 000032 	: TUCK SWAP OVER ;
 	.long w_swap_cw                 
 	.long w_OVER_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_PICK,0,"PICK",f_docol          // 000054 	: PICK ( "PICK" ) LIT \'0x00000003 + LIT \'0x00000002 * C>D S? SWAP2 -D @ ;
+DEFWORD w_PICK,0,"PICK",f_docol          // 000033 	: PICK LIT \'0x00000003 + LIT \'0x00000002 * C>D S? SWAP2 -D @ ;
 	.long w_lit_cw                  
 	.long 0x00000003                
 	.long w_plus_cw                 
@@ -211,7 +211,7 @@ DEFWORD w_PICK,0,"PICK",f_docol          // 000054 	: PICK ( "PICK" ) LIT \'0x00
 	.long w_At_cw                   
 	.long w_exit_cw                 
 
-DEFWORD w_SPACES,0,"SPACES",f_docol      // 000055 	: SPACES ( "SPACES" ) DUP 0> 0BRANCH \'0x00000014 SPACE 1- BRANCH \'0xFFFFFFE4 DROP ;
+DEFWORD w_SPACES,0,"SPACES",f_docol      // 000034 	: SPACES DUP 0> 0BRANCH \'0x00000014 SPACE 1- BRANCH \'0xFFFFFFE4 DROP ;
 	.long w_dup_cw                  
 	.long w_positive_cw             
 	.long w_0branch_cw              
@@ -223,28 +223,28 @@ DEFWORD w_SPACES,0,"SPACES",f_docol      // 000055 	: SPACES ( "SPACES" ) DUP 0>
 	.long w_drop_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_newDECIMAL,0,"DECIMAL",f_docol // 000056 	: DECIMAL ( "newDECIMAL" ) LIT \'0x0000000A BASE ! ;
+DEFWORD w_newDECIMAL,0,"DECIMAL",f_docol // 000035 	: DECIMAL LIT \'0x0000000A BASE ! ;
 	.long w_lit_cw                  
 	.long 0x0000000A                
 	.long var_BASE_cw               
 	.long w_Store_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_newHEX,0,"HEX",f_docol         // 000057 	: HEX ( "newHEX" ) LIT \'0x00000010 BASE ! ;
+DEFWORD w_newHEX,0,"HEX",f_docol         // 000036 	: HEX LIT \'0x00000010 BASE ! ;
 	.long w_lit_cw                  
 	.long 0x00000010                
 	.long var_BASE_cw               
 	.long w_Store_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_Udot,0,"U.",f_docol            // 000058 	: U. ( "Udot" ) BASE @ /MOD ?DUP 0BRANCH \'0x00000008 U. DUP LIT \'0x0000000A < 0BRANCH \'0x00000010 '0' BRANCH \'0x00000014 LIT \'0x0000000A - 'A' + EMIT ;
+DEFWORD w_Udotdot,0,"U..",f_docol        // 000037 	: U.. BASE @ /MOD ?DUP 0BRANCH \'0x00000008 U.. DUP LIT \'0x0000000A < 0BRANCH \'0x00000010 '0' BRANCH \'0x00000014 LIT \'0x0000000A - 'A' + EMIT ;
 	.long var_BASE_cw               
 	.long w_At_cw                   
 	.long w_DIVMOD_cw               
 	.long w_QDUP_cw                 
 	.long w_0branch_cw              
 	.long 0x00000008                
-	.long w_Udot_cw                 
+	.long w_Udotdot_cw              
 	.long w_dup_cw                  
 	.long w_lit_cw                  
 	.long 0x0000000A                
@@ -262,7 +262,7 @@ DEFWORD w_Udot,0,"U.",f_docol            // 000058 	: U. ( "Udot" ) BASE @ /MOD 
 	.long w_emit_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_dotS,0,".S",f_docol            // 000059 	: .S ( "dotS" ) S? BASE C@ SWAP21 hex DUP2 S0 >D 0BRANCH \'0x0000003C LIT \'0x00000000 LIT \'0x00000002 -D DUP2 @ '<' EMIT U. '>' EMIT BRANCH \'0xFFFFFFB8 DROP2 '|' EMIT SPACE BASE C! ;
+DEFWORD w_dotS,0,".S",f_docol            // 000038 	: .S S? BASE C@ SWAP21 hex DUP2 S0 >D 0BRANCH \'0x0000003C LIT \'0x00000000 LIT \'0x00000002 -D DUP2 @ '<' EMIT U.. '>' EMIT BRANCH \'0xFFFFFFB8 DROP2 '|' EMIT SPACE BASE C! ;
 	.long w_StackAddress_cw         
 	.long var_BASE_cw               
 	.long w_CharAt_cw               
@@ -282,7 +282,7 @@ DEFWORD w_dotS,0,".S",f_docol            // 000059 	: .S ( "dotS" ) S? BASE C@ S
 	.long w_At_cw                   
 	.long w_quoted_less_cw          
 	.long w_emit_cw                 
-	.long w_Udot_cw                 
+	.long w_Udotdot_cw              
 	.long w_quoted_more_cw          
 	.long w_emit_cw                 
 	.long w_branch_cw               
@@ -295,7 +295,7 @@ DEFWORD w_dotS,0,".S",f_docol            // 000059 	: .S ( "dotS" ) S? BASE C@ S
 	.long w_CharStore_cw            
 	.long w_exit_cw                 
 
-DEFWORD w_UWIDTH,0,"UWIDTH",f_docol      // 000060 	: UWIDTH ( "UWIDTH" ) BASE @ / ?DUP 0BRANCH \'0x00000014 UWIDTH 1+ BRANCH \'0x0000000C LIT \'0x00000001 ;
+DEFWORD w_UWIDTH,0,"UWIDTH",f_docol      // 000039 	: UWIDTH BASE @ / ?DUP 0BRANCH \'0x00000014 UWIDTH 1+ BRANCH \'0x0000000C LIT \'0x00000001 ;
 	.long var_BASE_cw               
 	.long w_At_cw                   
 	.long w_newdiv_cw               
@@ -310,7 +310,7 @@ DEFWORD w_UWIDTH,0,"UWIDTH",f_docol      // 000060 	: UWIDTH ( "UWIDTH" ) BASE @
 	.long 0x00000001                
 	.long w_exit_cw                 
 
-DEFWORD w_UdotR,0,"U.R",f_docol          // 000061 	: U.R ( "UdotR" ) SWAP DUP UWIDTH ROT SWAP - SPACES U. ;
+DEFWORD w_UdotR,0,"U.R",f_docol          // 000040 	: U.R SWAP DUP UWIDTH ROT SWAP - SPACES U.. ;
 	.long w_swap_cw                 
 	.long w_dup_cw                  
 	.long w_UWIDTH_cw               
@@ -318,10 +318,10 @@ DEFWORD w_UdotR,0,"U.R",f_docol          // 000061 	: U.R ( "UdotR" ) SWAP DUP U
 	.long w_swap_cw                 
 	.long w_minus_cw                
 	.long w_SPACES_cw               
-	.long w_Udot_cw                 
+	.long w_Udotdot_cw              
 	.long w_exit_cw                 
 
-DEFWORD w_dotR,0,".R",f_docol            // 000062 	: .R ( "dotR" ) SWAP DUP 0< 0BRANCH \'0x00000024 NEGATE LIT \'0x00000001 SWAP ROT 1- BRANCH \'0x00000014 LIT \'0x00000000 SWAP ROT SWAP DUP UWIDTH ROT SWAP - SPACES SWAP 0BRANCH \'0x0000000C '-' EMIT U. ;
+DEFWORD w_dotR,0,".R",f_docol            // 000041 	: .R SWAP DUP 0< 0BRANCH \'0x00000024 NEGATE LIT \'0x00000001 SWAP ROT 1- BRANCH \'0x00000014 LIT \'0x00000000 SWAP ROT SWAP DUP UWIDTH ROT SWAP - SPACES SWAP 0BRANCH \'0x0000000C '-' EMIT U.. ;
 	.long w_swap_cw                 
 	.long w_dup_cw                  
 	.long w_negative_cw             
@@ -351,27 +351,27 @@ DEFWORD w_dotR,0,".R",f_docol            // 000062 	: .R ( "dotR" ) SWAP DUP 0< 
 	.long 0x0000000C                
 	.long w_quoted_minus_cw         
 	.long w_emit_cw                 
-	.long w_Udot_cw                 
+	.long w_Udotdot_cw              
 	.long w_exit_cw                 
 
-DEFWORD w_dotdot,0,"..",f_docol          // 000063 	: .. ( "dotdot" ) LIT \'0x00000000 .R SPACE ;
+DEFWORD w_dotdot,0,"..",f_docol          // 000042 	: .. LIT \'0x00000000 .R SPACE ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_dotR_cw                 
 	.long w_SPACE_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_Udotredef,0,"U.",f_docol       // 000064 	: U. ( "Udotredef" ) U. SPACE ;
-	.long w_Udotredef_cw            
+DEFWORD w_Udot,0,"U.",f_docol            // 000043 	: U. U.. SPACE ;
+	.long w_Udotdot_cw              
 	.long w_SPACE_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_question,0,"?",f_docol         // 000065 	: ? ( "question" ) @ . ;
+DEFWORD w_question,0,"?",f_docol         // 000044 	: ? @ . ;
 	.long w_At_cw                   
 	.long w_dot_cw                  
 	.long w_exit_cw                 
 
-DEFWORD w_WITHIN,0,"WITHIN",f_docol      // 000066 	: WITHIN ( "WITHIN" ) -ROT OVER <= 0BRANCH \'0x00000028 > 0BRANCH \'0x00000010 TRUE BRANCH \'0x00000008 FALSE BRANCH \'0x0000000C DROP2 FALSE ;
+DEFWORD w_WITHIN,0,"WITHIN",f_docol      // 000045 	: WITHIN -ROT OVER <= 0BRANCH \'0x00000028 > 0BRANCH \'0x00000010 TRUE BRANCH \'0x00000008 FALSE BRANCH \'0x0000000C DROP2 FALSE ;
 	.long w_NROT_cw                 
 	.long w_OVER_cw                 
 	.long w_lessequal_cw            
@@ -390,7 +390,7 @@ DEFWORD w_WITHIN,0,"WITHIN",f_docol      // 000066 	: WITHIN ( "WITHIN" ) -ROT O
 	.long w_FALSE_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_DEPTH,0,"DEPTH",f_docol        // 000067 	: DEPTH ( "DEPTH" ) S? S0 -D LIT \'0x00000002 C>D -D SWAP DROP /2 ;
+DEFWORD w_DEPTH,0,"DEPTH",f_docol        // 000046 	: DEPTH S? S0 -D LIT \'0x00000002 C>D -D SWAP DROP /2 ;
 	.long w_StackAddress_cw         
 	.long const_S0_cw               
 	.long w_minus_D_cw              
@@ -403,7 +403,7 @@ DEFWORD w_DEPTH,0,"DEPTH",f_docol        // 000067 	: DEPTH ( "DEPTH" ) S? S0 -D
 	.long w_div2_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_ALIGNED,0,"ALIGNED",f_docol    // 000068 	: ALIGNED ( "ALIGNED" ) LIT \'0x00000000 LIT \'0x00000003 +D LIT \'0x00000003 INVERT AND ;
+DEFWORD w_ALIGNED,0,"ALIGNED",f_docol    // 000047 	: ALIGNED LIT \'0x00000000 LIT \'0x00000003 +D LIT \'0x00000003 INVERT AND ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_lit_cw                  
@@ -415,7 +415,7 @@ DEFWORD w_ALIGNED,0,"ALIGNED",f_docol    // 000068 	: ALIGNED ( "ALIGNED" ) LIT 
 	.long w_and_cw                  
 	.long w_exit_cw                 
 
-DEFWORD w_ALIGN,0,"ALIGN",f_docol        // 000069 	: ALIGN ( "ALIGN" ) HERE D@ ALIGNED HERE D! ;
+DEFWORD w_ALIGN,0,"ALIGN",f_docol        // 000048 	: ALIGN HERE D@ ALIGNED HERE D! ;
 	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
 	.long w_ALIGNED_cw              
@@ -423,7 +423,7 @@ DEFWORD w_ALIGN,0,"ALIGN",f_docol        // 000069 	: ALIGN ( "ALIGN" ) HERE D@ 
 	.long w_DoubleStore_cw          
 	.long w_exit_cw                 
 
-DEFWORD w_Ccomma,0,"C,",f_docol          // 000070 	: C, ( "Ccomma" ) HERE D@ C! HERE D@ LIT \'0x00000001 +21 HERE D! ;
+DEFWORD w_Ccomma,0,"C,",f_docol          // 000049 	: C, HERE D@ C! HERE D@ LIT \'0x00000001 +21 HERE D! ;
 	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
 	.long w_CharStore_cw            
@@ -436,7 +436,7 @@ DEFWORD w_Ccomma,0,"C,",f_docol          // 000070 	: C, ( "Ccomma" ) HERE D@ C!
 	.long w_DoubleStore_cw          
 	.long w_exit_cw                 
 
-DEFWORD w_Squote,FLG_IMMEDIATE,"S\"",f_docol // 000071 	: S" ( "Squote" ) IMMEDIATE STATE C@ 0BRANCH \'0x0000007C ' LITSTRING , HERE D@ LIT \'0x00000000 LIT \'0x00000000 , KEY DUP '"' <> 0BRANCH \'0x00000010 C, BRANCH \'0xFFFFFFE0 DROP DUP2 HERE D@ SWAP2 -D 4D- SWAP2 D! BRANCH \'0x0000005C HERE D@ KEY DUP '"' <> 0BRANCH \'0x00000018 OVER21 C! 1D+ BRANCH \'0xFFFFFFD8 DROP HERE D@ -D HERE D@ SWAP2 SWAP DROP ;
+DEFWORD w_Squote,FLG_IMMEDIATE,"S\"",f_docol // 000050 	: S" IMMEDIATE STATE C@ 0BRANCH \'0x0000007C ' LITSTRING , HERE D@ LIT \'0x00000000 LIT \'0x00000000 , KEY DUP '"' <> 0BRANCH \'0x00000010 C, BRANCH \'0xFFFFFFE0 DROP DUP2 HERE D@ SWAP2 -D 4D- SWAP2 D! BRANCH \'0x0000005C HERE D@ KEY DUP '"' <> 0BRANCH \'0x00000018 OVER21 C! 1D+ BRANCH \'0xFFFFFFD8 DROP HERE D@ -D HERE D@ SWAP2 SWAP DROP ;
 	.long var_STATE_cw              
 	.long w_CharAt_cw               
 	.long w_0branch_cw              
@@ -495,7 +495,7 @@ DEFWORD w_Squote,FLG_IMMEDIATE,"S\"",f_docol // 000071 	: S" ( "Squote" ) IMMEDI
 	.long w_drop_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_dotquote,FLG_IMMEDIATE,".\"",f_docol // 000072 	: ." ( "dotquote" ) IMMEDIATE STATE C@ 0BRANCH \'0x0000001C S" ' TELL , BRANCH \'0x00000030 KEY DUP '"' = 0BRANCH \'0x0000000C DROP ;
+DEFWORD w_dotquote,FLG_IMMEDIATE,".\"",f_docol // 000051 	: ." IMMEDIATE STATE C@ 0BRANCH \'0x0000001C S" ' TELL , BRANCH \'0x00000030 KEY DUP '"' = 0BRANCH \'0x0000000C DROP ;
 	.long var_STATE_cw              
 	.long w_CharAt_cw               
 	.long w_0branch_cw              
@@ -515,32 +515,32 @@ DEFWORD w_dotquote,FLG_IMMEDIATE,".\"",f_docol // 000072 	: ." ( "dotquote" ) IM
 	.long w_drop_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_CONSTANT,0,"CONSTANT",f_docol  // 000073 	: CONSTANT ( "CONSTANT" ) WORD CREATE DOCOL , ' LIT \'0x0804DD0E C>D , ' ;
+DEFWORD w_CONSTANT,0,"CONSTANT",f_docol  // 000052 	: CONSTANT WORD CREATE DOCOL , ' LIT , C>D , ' ;
 	.long w_word_cw                 
 	.long w_create_cw               
 	.long const_DOCOL_cw            
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_lit_cw                  
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_CtoD_cw                 
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_CONSTANT2,0,"CONSTANT2",f_docol // 000074 	: CONSTANT2 ( "CONSTANT2" ) WORD CREATE DOCOL , ' LIT \'0x0804DD0E , ' ;
+DEFWORD w_CONSTANT2,0,"CONSTANT2",f_docol // 000053 	: CONSTANT2 WORD CREATE DOCOL , ' LIT , , ' ;
 	.long w_word_cw                 
 	.long w_create_cw               
 	.long const_DOCOL_cw            
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_lit_cw                  
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_ALLOT,0,"ALLOT",f_docol        // 000075 	: ALLOT ( "ALLOT" ) HERE D@ SWAP12 HERE +! ;
+DEFWORD w_ALLOT,0,"ALLOT",f_docol        // 000054 	: ALLOT HERE D@ SWAP12 HERE +! ;
 	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
 	.long w_swap_12_cw              
@@ -548,13 +548,13 @@ DEFWORD w_ALLOT,0,"ALLOT",f_docol        // 000075 	: ALLOT ( "ALLOT" ) HERE D@ 
 	.long w_ADDSTORE_cw             
 	.long w_exit_cw                 
 
-DEFWORD w_CELLS,0,"CELLS",f_docol        // 000076 	: CELLS ( "CELLS" ) LIT \'0x00000002 * ;
+DEFWORD w_CELLS,0,"CELLS",f_docol        // 000055 	: CELLS LIT \'0x00000002 * ;
 	.long w_lit_cw                  
 	.long 0x00000002                
 	.long w_times_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_VARIABLE,0,"VARIABLE",f_docol  // 000077 	: VARIABLE ( "VARIABLE" ) LIT \'0x00000002 CELLS ALLOT WORD CREATE DOCOL , ' LIT2 \'0x0804DD0E , ' ;
+DEFWORD w_VARIABLE,0,"VARIABLE",f_docol  // 000056 	: VARIABLE LIT \'0x00000002 CELLS ALLOT WORD CREATE DOCOL , ' LIT2 , , ' ;
 	.long w_lit_cw                  
 	.long 0x00000002                
 	.long w_CELLS_cw                
@@ -565,37 +565,37 @@ DEFWORD w_VARIABLE,0,"VARIABLE",f_docol  // 000077 	: VARIABLE ( "VARIABLE" ) LI
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_lit2_cw                 
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_VALUE,0,"VALUE",f_docol        // 000078 	: VALUE ( "VALUE" ) WORD CREATE DOCOL , ' LIT \'0x0804DD0E C>D , ' ;
+DEFWORD w_VALUE,0,"VALUE",f_docol        // 000057 	: VALUE WORD CREATE DOCOL , ' LIT , C>D , ' ;
 	.long w_word_cw                 
 	.long w_create_cw               
 	.long const_DOCOL_cw            
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_lit_cw                  
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_CtoD_cw                 
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_VALUE2,0,"VALUE2",f_docol      // 000079 	: VALUE2 ( "VALUE2" ) WORD CREATE DOCOL , ' LIT2 \'0x0804DD0E , ' ;
+DEFWORD w_VALUE2,0,"VALUE2",f_docol      // 000058 	: VALUE2 WORD CREATE DOCOL , ' LIT2 , , ' ;
 	.long w_word_cw                 
 	.long w_create_cw               
 	.long const_DOCOL_cw            
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_lit2_cw                 
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_TO,FLG_IMMEDIATE,"TO",f_docol  // 000080 	: TO ( "TO" ) IMMEDIATE WORD FIND >DFA 4+ STATE C@ 0BRANCH \'0x0000002C ' LIT \'0x0804DD0E C>D , ' D! , BRANCH \'0x00000008 ! ;
+DEFWORD w_TO,FLG_IMMEDIATE,"TO",f_docol  // 000059 	: TO IMMEDIATE WORD FIND >DFA 4+ STATE C@ 0BRANCH \'0x0000002C ' LIT , C>D , ' D! , BRANCH \'0x00000008 ! ;
 	.long w_word_cw                 
 	.long w_find_cw                 
 	.long w_ToDFA_cw                
@@ -606,7 +606,7 @@ DEFWORD w_TO,FLG_IMMEDIATE,"TO",f_docol  // 000080 	: TO ( "TO" ) IMMEDIATE WORD
 	.long 0x0000002C                
 	.long w_tick_cw                 
 	.long w_lit_cw                  
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_CtoD_cw                 
 	.long w_comma_cw                
 	.long w_tick_cw                 
@@ -617,7 +617,7 @@ DEFWORD w_TO,FLG_IMMEDIATE,"TO",f_docol  // 000080 	: TO ( "TO" ) IMMEDIATE WORD
 	.long w_Store_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_TO2,FLG_IMMEDIATE,"TO2",f_docol // 000081 	: TO2 ( "TO2" ) IMMEDIATE WORD FIND >DFA 4+ STATE C@ 0BRANCH \'0x00000028 ' LIT2 \'0x0804DD0E , ' D! , BRANCH \'0x00000008 D! ;
+DEFWORD w_TO2,FLG_IMMEDIATE,"TO2",f_docol // 000060 	: TO2 IMMEDIATE WORD FIND >DFA 4+ STATE C@ 0BRANCH \'0x00000028 ' LIT2 , , ' D! , BRANCH \'0x00000008 D! ;
 	.long w_word_cw                 
 	.long w_find_cw                 
 	.long w_ToDFA_cw                
@@ -628,7 +628,7 @@ DEFWORD w_TO2,FLG_IMMEDIATE,"TO2",f_docol // 000081 	: TO2 ( "TO2" ) IMMEDIATE W
 	.long 0x00000028                
 	.long w_tick_cw                 
 	.long w_lit2_cw                 
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_DoubleStore_cw          
@@ -638,7 +638,7 @@ DEFWORD w_TO2,FLG_IMMEDIATE,"TO2",f_docol // 000081 	: TO2 ( "TO2" ) IMMEDIATE W
 	.long w_DoubleStore_cw          
 	.long w_exit_cw                 
 
-DEFWORD w_plusTO,FLG_IMMEDIATE,"+TO",f_docol // 000082 	: +TO ( "plusTO" ) IMMEDIATE WORD FIND >DFA 4+ STATE C@ 0BRANCH \'0x0000002C ' LIT \'0x0804DD0E C>D , ' +! , BRANCH \'0x00000008 +! ;
+DEFWORD w_plusTO,FLG_IMMEDIATE,"+TO",f_docol // 000061 	: +TO IMMEDIATE WORD FIND >DFA 4+ STATE C@ 0BRANCH \'0x0000002C ' LIT , C>D , ' +! , BRANCH \'0x00000008 +! ;
 	.long w_word_cw                 
 	.long w_find_cw                 
 	.long w_ToDFA_cw                
@@ -649,7 +649,7 @@ DEFWORD w_plusTO,FLG_IMMEDIATE,"+TO",f_docol // 000082 	: +TO ( "plusTO" ) IMMED
 	.long 0x0000002C                
 	.long w_tick_cw                 
 	.long w_lit_cw                  
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_CtoD_cw                 
 	.long w_comma_cw                
 	.long w_tick_cw                 
@@ -660,7 +660,7 @@ DEFWORD w_plusTO,FLG_IMMEDIATE,"+TO",f_docol // 000082 	: +TO ( "plusTO" ) IMMED
 	.long w_ADDSTORE_cw             
 	.long w_exit_cw                 
 
-DEFWORD w_plusTO2,FLG_IMMEDIATE,"+TO2",f_docol // 000083 	: +TO2 ( "plusTO2" ) IMMEDIATE WORD FIND >DFA 4+ STATE C@ 0BRANCH \'0x00000028 ' LIT \'0x0804DD0E , ' +!D , BRANCH \'0x00000008 +!D ;
+DEFWORD w_plusTO2,FLG_IMMEDIATE,"+TO2",f_docol // 000062 	: +TO2 IMMEDIATE WORD FIND >DFA 4+ STATE C@ 0BRANCH \'0x00000028 ' LIT , , ' +!D , BRANCH \'0x00000008 +!D ;
 	.long w_word_cw                 
 	.long w_find_cw                 
 	.long w_ToDFA_cw                
@@ -671,7 +671,7 @@ DEFWORD w_plusTO2,FLG_IMMEDIATE,"+TO2",f_docol // 000083 	: +TO2 ( "plusTO2" ) I
 	.long 0x00000028                
 	.long w_tick_cw                 
 	.long w_lit_cw                  
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_comma_cw                
 	.long w_tick_cw                 
 	.long w_ADDSTORED_cw            
@@ -681,7 +681,7 @@ DEFWORD w_plusTO2,FLG_IMMEDIATE,"+TO2",f_docol // 000083 	: +TO2 ( "plusTO2" ) I
 	.long w_ADDSTORED_cw            
 	.long w_exit_cw                 
 
-DEFWORD w_IDdot,0,"ID.",f_docol          // 000084 	: ID. ( "IDdot" ) 4D+ 1D+ DUP2 C@ DUP 0> 0BRANCH \'0x00000028 SWAP21 1+ DUP2 C@ EMIT SWAP12 1- BRANCH \'0xFFFFFFD0 DROP DROP2 ;
+DEFWORD w_IDdot,0,"ID.",f_docol          // 000063 	: ID. 4D+ 1D+ DUP2 C@ DUP 0> 0BRANCH \'0x00000028 SWAP21 1+ DUP2 C@ EMIT SWAP12 1- BRANCH \'0xFFFFFFD0 DROP DROP2 ;
 	.long w_4Dplus_cw               
 	.long w_1Dplus_cw               
 	.long w_dup_D_cw                
@@ -703,21 +703,21 @@ DEFWORD w_IDdot,0,"ID.",f_docol          // 000084 	: ID. ( "IDdot" ) 4D+ 1D+ DU
 	.long w_drop_D_cw               
 	.long w_exit_cw                 
 
-DEFWORD w_qHIDDEN,0,"?HIDDEN",f_docol    // 000085 	: ?HIDDEN ( "qHIDDEN" ) 4+ C@ F_HIDDEN AND ;
+DEFWORD w_qHIDDEN,0,"?HIDDEN",f_docol    // 000064 	: ?HIDDEN 4+ C@ F_HIDDEN AND ;
 	.long w_4plus_cw                
 	.long w_CharAt_cw               
 	.long const_F_HIDDEN_cw         
 	.long w_and_cw                  
 	.long w_exit_cw                 
 
-DEFWORD w_qIMMEDIATE,0,"?IMMEDIATE",f_docol // 000086 	: ?IMMEDIATE ( "qIMMEDIATE" ) 4+ C@ F_IMMEDIATE AND ;
+DEFWORD w_qIMMEDIATE,0,"?IMMEDIATE",f_docol // 000065 	: ?IMMEDIATE 4+ C@ F_IMMEDIATE AND ;
 	.long w_4plus_cw                
 	.long w_CharAt_cw               
 	.long const_F_IMMEDIATE_cw      
 	.long w_and_cw                  
 	.long w_exit_cw                 
 
-DEFWORD w_WORDS,0,"WORDS",f_docol        // 000087 	: WORDS ( "WORDS" ) LAST D@ ?DUP2 NOTNULL 0BRANCH \'0x00000030 DUP2 ?HIDDEN NOT 0BRANCH \'0x00000010 DUP2 ID. SPACE D@ BRANCH \'0xFFFFFFC8 CR ;
+DEFWORD w_newWORDS,0,"WORDS",f_docol     // 000066 	: WORDS LAST D@ ?DUP2 NOTNULL 0BRANCH \'0x00000030 DUP2 ?HIDDEN NOT 0BRANCH \'0x00000010 DUP2 ID. SPACE D@ BRANCH \'0xFFFFFFC8 CR ;
 	.long var_LAST_cw               
 	.long w_DoubleAt_cw             
 	.long w_QDUPD_cw                
@@ -738,7 +738,7 @@ DEFWORD w_WORDS,0,"WORDS",f_docol        // 000087 	: WORDS ( "WORDS" ) LAST D@ 
 	.long w_CR_cw                   
 	.long w_exit_cw                 
 
-DEFWORD w_newFORGET,0,"FORGET",f_docol   // 000088 	: FORGET ( "newFORGET" ) WORD FIND DUP2 ISNULL 0BRANCH \'0x0000000C DROP2 RETURN DUP2 D@ LAST D! HERE D! ;
+DEFWORD w_newFORGET,0,"FORGET",f_docol   // 000067 	: FORGET WORD FIND DUP2 ISNULL 0BRANCH \'0x0000000C DROP2 RETURN DUP2 D@ LAST D! HERE D! ;
 	.long w_word_cw                 
 	.long w_find_cw                 
 	.long w_dup_D_cw                
@@ -755,7 +755,7 @@ DEFWORD w_newFORGET,0,"FORGET",f_docol   // 000088 	: FORGET ( "newFORGET" ) WOR
 	.long w_DoubleStore_cw          
 	.long w_exit_cw                 
 
-DEFWORD w_DUMP,0,"DUMP",f_docol          // 000089 	: DUMP ( "DUMP" ) BASE C@ -ROT4 HEX ?DUP 0BRANCH \'0x00000138 OVER21 SWAP LIT \'0x00000004 U.R LIT \'0x00000004 U.R SPACE DUP3 1- LIT \'0x0000000F AND 1+ ?DUP 0BRANCH \'0x00000034 SWAP21 DUP2 C@ LIT \'0x00000002 .R SPACE 1+ SWAP12 1- BRANCH \'0xFFFFFFC8 DROP2 DUP3 1- LIT \'0x0000000F AND 1+ ?DUP 0BRANCH \'0x0000005C SWAP21 DUP2 C@ DUP LIT \'0x00000020 LIT \'0x00000080 WITHIN 0BRANCH \'0x00000010 EMIT BRANCH \'0x00000010 DROP '.' EMIT 1+ SWAP12 1- BRANCH \'0xFFFFFFA0 DROP2 CR DUP 1- LIT \'0x0000000F AND 1+ TUCK - >R +21 R> BRANCH \'0xFFFFFEC4 DROP2 BASE C! ;
+DEFWORD w_DUMP,0,"DUMP",f_docol          // 000068 	: DUMP BASE C@ -ROT4 HEX ?DUP 0BRANCH \'0x00000138 OVER21 SWAP LIT \'0x00000004 U.R LIT \'0x00000004 U.R SPACE DUP3 1- LIT \'0x0000000F AND 1+ ?DUP 0BRANCH \'0x00000034 SWAP21 DUP2 C@ LIT \'0x00000002 .R SPACE 1+ SWAP12 1- BRANCH \'0xFFFFFFC8 DROP2 DUP3 1- LIT \'0x0000000F AND 1+ ?DUP 0BRANCH \'0x0000005C SWAP21 DUP2 C@ DUP LIT \'0x00000020 LIT \'0x00000080 WITHIN 0BRANCH \'0x00000010 EMIT BRANCH \'0x00000010 DROP '.' EMIT 1+ SWAP12 1- BRANCH \'0xFFFFFFA0 DROP2 CR DUP 1- LIT \'0x0000000F AND 1+ TUCK - >R +21 R> BRANCH \'0xFFFFFEC4 DROP2 BASE C! ;
 	.long var_BASE_cw               
 	.long w_CharAt_cw               
 	.long w_NROT4_cw                
@@ -845,12 +845,12 @@ DEFWORD w_DUMP,0,"DUMP",f_docol          // 000089 	: DUMP ( "DUMP" ) BASE C@ -R
 	.long w_CharStore_cw            
 	.long w_exit_cw                 
 
-DEFWORD w_CASE,FLG_IMMEDIATE,"CASE",f_docol // 000090 	: CASE ( "CASE" ) IMMEDIATE LIT \'0x00000000 ;
+DEFWORD w_CASE,FLG_IMMEDIATE,"CASE",f_docol // 000069 	: CASE IMMEDIATE LIT \'0x00000000 ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_exit_cw                 
 
-DEFWORD w_OF,FLG_IMMEDIATE,"OF",f_docol  // 000091 	: OF ( "OF" ) IMMEDIATE ' OVER , ' = , IF ' DROP , ;
+DEFWORD w_OF,FLG_IMMEDIATE,"OF",f_docol  // 000070 	: OF IMMEDIATE ' OVER , ' = , IF ' DROP , ;
 	.long w_tick_cw                 
 	.long w_OVER_cw                 
 	.long w_comma_cw                
@@ -863,11 +863,11 @@ DEFWORD w_OF,FLG_IMMEDIATE,"OF",f_docol  // 000091 	: OF ( "OF" ) IMMEDIATE ' OV
 	.long w_comma_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_ENDOF,FLG_IMMEDIATE,"ENDOF",f_docol // 000092 	: ENDOF ( "ENDOF" ) IMMEDIATE ELSE ;
+DEFWORD w_ENDOF,FLG_IMMEDIATE,"ENDOF",f_docol // 000071 	: ENDOF IMMEDIATE ELSE ;
 	.long w_ELSE_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_ENDCASE,FLG_IMMEDIATE,"ENDCASE",f_docol // 000093 	: ENDCASE ( "ENDCASE" ) IMMEDIATE ' DROP , ?DUP 0BRANCH \'0x00000010 THEN BRANCH \'0xFFFFFFEC ;
+DEFWORD w_ENDCASE,FLG_IMMEDIATE,"ENDCASE",f_docol // 000072 	: ENDCASE IMMEDIATE ' DROP , ?DUP 0BRANCH \'0x00000010 THEN BRANCH \'0xFFFFFFEC ;
 	.long w_tick_cw                 
 	.long w_drop_cw                 
 	.long w_comma_cw                
@@ -879,14 +879,14 @@ DEFWORD w_ENDCASE,FLG_IMMEDIATE,"ENDCASE",f_docol // 000093 	: ENDCASE ( "ENDCAS
 	.long 0xFFFFFFEC                
 	.long w_exit_cw                 
 
-DEFWORD w_CASE2,FLG_IMMEDIATE,"CASE2",f_docol // 000094 	: CASE2 ( "CASE2" ) IMMEDIATE LIT \'0x00000000 LIT \'0x00000000 ;
+DEFWORD w_CASE2,FLG_IMMEDIATE,"CASE2",f_docol // 000073 	: CASE2 IMMEDIATE LIT \'0x00000000 LIT \'0x00000000 ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_exit_cw                 
 
-DEFWORD w_OF2,FLG_IMMEDIATE,"OF2",f_docol // 000095 	: OF2 ( "OF2" ) IMMEDIATE ' OVER2 , ' =D , IF ' DROP2 , ;
+DEFWORD w_OF2,FLG_IMMEDIATE,"OF2",f_docol // 000074 	: OF2 IMMEDIATE ' OVER2 , ' =D , IF ' DROP2 , ;
 	.long w_tick_cw                 
 	.long w_OVER2_cw                
 	.long w_comma_cw                
@@ -899,7 +899,7 @@ DEFWORD w_OF2,FLG_IMMEDIATE,"OF2",f_docol // 000095 	: OF2 ( "OF2" ) IMMEDIATE '
 	.long w_comma_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_ENDCASE2,FLG_IMMEDIATE,"ENDCASE2",f_docol // 000096 	: ENDCASE2 ( "ENDCASE2" ) IMMEDIATE ' DROP2 , ?DUP2 NOTNULL 0BRANCH \'0x00000010 THEN BRANCH \'0xFFFFFFE8 ;
+DEFWORD w_ENDCASE2,FLG_IMMEDIATE,"ENDCASE2",f_docol // 000075 	: ENDCASE2 IMMEDIATE ' DROP2 , ?DUP2 NOTNULL 0BRANCH \'0x00000010 THEN BRANCH \'0xFFFFFFE8 ;
 	.long w_tick_cw                 
 	.long w_drop_D_cw               
 	.long w_comma_cw                
@@ -912,7 +912,7 @@ DEFWORD w_ENDCASE2,FLG_IMMEDIATE,"ENDCASE2",f_docol // 000096 	: ENDCASE2 ( "END
 	.long 0xFFFFFFE8                
 	.long w_exit_cw                 
 
-DEFWORD w_CFAto,0,"CFA>",f_docol         // 000097 	: CFA> ( "CFAto" ) LAST D@ ?DUP2 NOTNULL 0BRANCH \'0x0000002C DUP4 SWAP2 <D 0BRANCH \'0x0000000C NIP2 ;
+DEFWORD w_CFAto,0,"CFA>",f_docol         // 000076 	: CFA> LAST D@ ?DUP2 NOTNULL 0BRANCH \'0x0000002C DUP4 SWAP2 <D 0BRANCH \'0x0000000C NIP2 ;
 	.long var_LAST_cw               
 	.long w_DoubleAt_cw             
 	.long w_QDUPD_cw                
@@ -927,7 +927,210 @@ DEFWORD w_CFAto,0,"CFA>",f_docol         // 000097 	: CFA> ( "CFAto" ) LAST D@ ?
 	.long w_NIP2_cw                 
 	.long w_exit_cw                 
 
-DEFWORD w_colonNONAME,0,":NONAME",f_docol // 000098 	: :NONAME ( "colonNONAME" ) LIT \'0x00000000 LIT \'0x00000000 CREATE HERE D@ DOCOL , ] ;
+DEFWORD w_SEE2,0,"SEE",f_docol           // 000077 	: SEE WORD FIND 
+	.long w_word_cw                 
+	.long w_find_cw                 
+	.long var_HERE_cw                // 000078 		HERE D@ LAST D@ LIT \'0x00000005 PICK LIT \'0x00000005 PICK OVER2 <>D 0BRANCH \'0x00000018 NIP2 DUP2 D@ BRANCH \'0xFFFFFFC8 DROP2 SWAP2 ':' EMIT SPACE DUP2 ID. SPACE DUP2 ?IMMEDIATE 0BRANCH \'0x0000001A LITSTRING \'0x0000000A \"IMMEDIATE " >DFA OVER2 OVER2 >D 0BRANCH \'0x0000031C DUP2 D@ ' LIT OVER2 =D 0BRANCH \'0x00000034 DROP2 LIT \'0x00000000 LIT \'0x00000004 +D DUP2 @ . SPACE BRANCH \'0x000002B0 ' LIT2 OVER2 =D 0BRANCH \'0x00000040 DROP2 LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . SPACE BRANCH \'0x0000025C ' LITSTRING OVER2 =D 0BRANCH \'0x00000090 DROP2 LIT \'0x00000053 EMIT '"' EMIT SPACE LIT \'0x00000000 LIT \'0x00000004 +D DUP2 C@ SWAP21 LIT \'0x00000000 LIT \'0x00000004 +D SWAP12 OVER21 OVER12 TELL '"' EMIT SPACE +21 LIT \'0x00000000 LIT \'0x00000004 -D BRANCH \'0x000001B8 ' 0BRANCH OVER2 =D 0BRANCH \'0x00000060 DROP2 LITSTRING \'0x0000000A \"0BRANCH ( " LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . LITSTRING \'0x00000002 \") " BRANCH \'0x00000144 ' BRANCH OVER2 =D 0BRANCH \'0x0000005F DROP2 LITSTRING \'0x00000009 \"BRANCH ( " LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . LITSTRING \'0x00000002 \") " BRANCH \'0x000000D1 ' ' OVER2 =D 0BRANCH \'0x00000048 DROP2 LIT \'0x00000027 EMIT SPACE LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ CFA> ID. SPACE BRANCH \'0x00000075 ' ;
+	.long w_DoubleAt_cw             
+	.long var_LAST_cw               
+	.long w_DoubleAt_cw             
+	.long w_lit_cw                  
+	.long 0x00000005                
+	.long w_PICK_cw                 
+	.long w_lit_cw                  
+	.long 0x00000005                
+	.long w_PICK_cw                 
+	.long w_OVER2_cw                
+	.long w_notequalD_cw            
+	.long w_0branch_cw              
+	.long 0x00000018                
+	.long w_NIP2_cw                 
+	.long w_dup_D_cw                
+	.long w_DoubleAt_cw             
+	.long w_branch_cw               
+	.long 0xFFFFFFC8                
+	.long w_drop_D_cw               
+	.long w_swap_D_cw               
+	.long w_quoted_colon_cw         
+	.long w_emit_cw                 
+	.long w_SPACE_cw                
+	.long w_dup_D_cw                
+	.long w_IDdot_cw                
+	.long w_SPACE_cw                
+	.long w_dup_D_cw                
+	.long w_qIMMEDIATE_cw           
+	.long w_0branch_cw              
+	.long 0x0000001A                
+	.long w_LITSTRING_cw            
+	.long 0x0000000A                
+	.ascii "IMMEDIATE "             
+	.long w_ToDFA_cw                
+	.long w_OVER2_cw                
+	.long w_OVER2_cw                
+	.long w_greaterD_cw             
+	.long w_0branch_cw              
+	.long 0x0000031C                
+	.long w_dup_D_cw                
+	.long w_DoubleAt_cw             
+	.long w_tick_cw                 
+	.long w_lit_cw                  
+	.long w_OVER2_cw                
+	.long w_equalD_cw               
+	.long w_0branch_cw              
+	.long 0x00000034                
+	.long w_drop_D_cw               
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000004                
+	.long w_plus_D_cw               
+	.long w_dup_D_cw                
+	.long w_At_cw                   
+	.long w_dot_cw                  
+	.long w_SPACE_cw                
+	.long w_branch_cw               
+	.long 0x000002B0                
+	.long w_tick_cw                 
+	.long w_lit2_cw                 
+	.long w_OVER2_cw                
+	.long w_equalD_cw               
+	.long w_0branch_cw              
+	.long 0x00000040                
+	.long w_drop_D_cw               
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000004                
+	.long w_plus_D_cw               
+	.long w_dup_D_cw                
+	.long w_DoubleAt_cw             
+	.long w_swap_cw                 
+	.long w_dot_cw                  
+	.long w_SPACE_cw                
+	.long w_dot_cw                  
+	.long w_SPACE_cw                
+	.long w_branch_cw               
+	.long 0x0000025C                
+	.long w_tick_cw                 
+	.long w_LITSTRING_cw            
+	.long w_OVER2_cw                
+	.long w_equalD_cw               
+	.long w_0branch_cw              
+	.long 0x00000090                
+	.long w_drop_D_cw               
+	.long w_lit_cw                  
+	.long 0x00000053                
+	.long w_emit_cw                 
+	.long w_quoted_quote_cw         
+	.long w_emit_cw                 
+	.long w_SPACE_cw                
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000004                
+	.long w_plus_D_cw               
+	.long w_dup_D_cw                
+	.long w_CharAt_cw               
+	.long w_swap_21_cw              
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000004                
+	.long w_plus_D_cw               
+	.long w_swap_12_cw              
+	.long w_OVER21_cw               
+	.long w_OVER12_cw               
+	.long w_TELL_cw                 
+	.long w_quoted_quote_cw         
+	.long w_emit_cw                 
+	.long w_SPACE_cw                
+	.long w_plus21_cw               
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000004                
+	.long w_minus_D_cw              
+	.long w_branch_cw               
+	.long 0x000001B8                
+	.long w_tick_cw                 
+	.long w_0branch_cw              
+	.long w_OVER2_cw                
+	.long w_equalD_cw               
+	.long w_0branch_cw              
+	.long 0x00000060                
+	.long w_drop_D_cw               
+	.long w_LITSTRING_cw            
+	.long 0x0000000A                
+	.ascii "0BRANCH ( "             
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000004                
+	.long w_plus_D_cw               
+	.long w_dup_D_cw                
+	.long w_DoubleAt_cw             
+	.long w_swap_cw                 
+	.long w_dot_cw                  
+	.long w_SPACE_cw                
+	.long w_dot_cw                  
+	.long w_LITSTRING_cw            
+	.long 0x00000002                
+	.ascii ") "                     
+	.long w_branch_cw               
+	.long 0x00000144                
+	.long w_tick_cw                 
+	.long w_branch_cw               
+	.long w_OVER2_cw                
+	.long w_equalD_cw               
+	.long w_0branch_cw              
+	.long 0x0000005F                
+	.long w_drop_D_cw               
+	.long w_LITSTRING_cw            
+	.long 0x00000009                
+	.ascii "BRANCH ( "              
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000004                
+	.long w_plus_D_cw               
+	.long w_dup_D_cw                
+	.long w_DoubleAt_cw             
+	.long w_swap_cw                 
+	.long w_dot_cw                  
+	.long w_SPACE_cw                
+	.long w_dot_cw                  
+	.long w_LITSTRING_cw            
+	.long 0x00000002                
+	.ascii ") "                     
+	.long w_branch_cw               
+	.long 0x000000D1                
+	.long w_tick_cw                 
+	.long w_tick_cw                 
+	.long w_OVER2_cw                
+	.long w_equalD_cw               
+	.long w_0branch_cw              
+	.long 0x00000048                
+	.long w_drop_D_cw               
+	.long w_lit_cw                  
+	.long 0x00000027                
+	.long w_emit_cw                 
+	.long w_SPACE_cw                
+	.long w_lit_cw                  
+	.long 0x00000000                
+	.long w_lit_cw                  
+	.long 0x00000004                
+	.long w_plus_D_cw               
+	.long w_dup_D_cw                
+	.long w_DoubleAt_cw             
+	.long w_CFAto_cw                
+	.long w_IDdot_cw                
+	.long w_SPACE_cw                
+	.long w_branch_cw               
+	.long 0x00000075                
+	.long w_tick_cw                 
+	.long w_exit_cw                 
+
+DEFWORD w_colonNONAME,0,":NONAME",f_docol // 000079 	: :NONAME LIT \'0x00000000 LIT \'0x00000000 CREATE HERE D@ DOCOL , ] ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_lit_cw                  
@@ -940,19 +1143,19 @@ DEFWORD w_colonNONAME,0,":NONAME",f_docol // 000098 	: :NONAME ( "colonNONAME" )
 	.long w_right_brac_cw           
 	.long w_exit_cw                 
 
-DEFWORD w_bracketedapostrophe,FLG_IMMEDIATE,"[']",f_docol // 000099 	: ['] ( "bracketedapostrophe" ) IMMEDIATE ' LIT \'0x0804DD0E ;
+DEFWORD w_bracketedapostrophe,FLG_IMMEDIATE,"[']",f_docol // 000080 	: ['] IMMEDIATE ' LIT , ;
 	.long w_tick_cw                 
 	.long w_lit_cw                  
-	.long 0x0804DD0E                
+	.long w_comma_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_EXCEPTION_MARKER,0,"EXCEPTION-MARKER",f_docol // 000100 	: EXCEPTION-MARKER ( "EXCEPTION_MARKER" ) RDROP LIT \'0x00000000 ;
+DEFWORD w_EXCEPTION_MARKER,0,"EXCEPTION-MARKER",f_docol // 000081 	: EXCEPTION-MARKER RDROP LIT \'0x00000000 ;
 	.long w_rdrop_cw                
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_exit_cw                 
 
-DEFWORD w_CATCH,0,"CATCH",f_docol        // 000101 	: CATCH ( "CATCH" ) S? 4+ >R ' EXCEPTION-MARKER 4+ >R EXECUTE ;
+DEFWORD w_CATCH,0,"CATCH",f_docol        // 000082 	: CATCH S? 4+ >R ' EXCEPTION-MARKER 4+ >R EXECUTE ;
 	.long w_StackAddress_cw         
 	.long w_4plus_cw                
 	.long w_ToR_cw                  
@@ -963,7 +1166,7 @@ DEFWORD w_CATCH,0,"CATCH",f_docol        // 000101 	: CATCH ( "CATCH" ) S? 4+ >R
 	.long w_EXECUTE_cw              
 	.long w_exit_cw                 
 
-DEFWORD w_THROW,0,"THROW",f_docol        // 000102 	: THROW ( "THROW" ) ?DUP 0BRANCH \'0x000000EE R? DUP R0 4- < 0BRANCH \'0x00000060 DUP @ ' EXCEPTION-MARKER 4+ = 0BRANCH \'0x00000034 4+ R! DUP DUP DUP R> 4- SWAP OVER ! S! ;
+DEFWORD w_THROW,0,"THROW",f_docol        // 000083 	: THROW ?DUP 0BRANCH \'0x000000EE R? DUP R0 4- < 0BRANCH \'0x00000060 DUP @ ' EXCEPTION-MARKER 4+ = 0BRANCH \'0x00000034 4+ R! DUP DUP DUP R> 4- SWAP OVER ! S! ;
 	.long w_QDUP_cw                 
 	.long w_0branch_cw              
 	.long 0x000000EE                
@@ -995,14 +1198,14 @@ DEFWORD w_THROW,0,"THROW",f_docol        // 000102 	: THROW ( "THROW" ) ?DUP 0BR
 	.long w_SetStack_cw             
 	.long w_exit_cw                 
 
-DEFWORD w_ABORT,0,"ABORT",f_docol        // 000103 	: ABORT ( "ABORT" ) LIT \'0x00000000 1- THROW ;
+DEFWORD w_ABORT,0,"ABORT",f_docol        // 000084 	: ABORT LIT \'0x00000000 1- THROW ;
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_1minus_cw               
 	.long w_THROW_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_PRINT_STACK_TRACE,0,"PRINT-STACK-TRACE",f_docol // 000104 	: PRINT-STACK-TRACE ( "PRINT_STACK_TRACE" ) R? DUP R0 4- < 0BRANCH \'0x000000B6 DUP @ ' EXCEPTION-MARKER 4+ OVER = 0BRANCH \'0x00000046 
+DEFWORD w_PRINT_STACK_TRACE,0,"PRINT-STACK-TRACE",f_docol // 000085 	: PRINT-STACK-TRACE R? DUP R0 4- < 0BRANCH \'0x000000B6 DUP @ ' EXCEPTION-MARKER 4+ OVER = 0BRANCH \'0x00000046 DROP LITSTRING \'0x0000000C \"CATCH ( DSP=" 4+ DUP @ U. LITSTRING \'0x00000002 \") " BRANCH \'0x00000044 DUP CFA> ?DUP 0BRANCH \'0x0000002C DUP2 ID. LIT \'0x0000002B EMIT SWAP >DFA 4+ - . DROP 4+ BRANCH \'0xFFFFFF3A DROP CR ;
 	.long w_RStackAddress_cw        
 	.long w_dup_cw                  
 	.long const_R0_cw               
@@ -1019,18 +1222,18 @@ DEFWORD w_PRINT_STACK_TRACE,0,"PRINT-STACK-TRACE",f_docol // 000104 	: PRINT-STA
 	.long w_equal_cw                
 	.long w_0branch_cw              
 	.long 0x00000046                
-	.long w_drop_cw                  // 000105 		DROP 
-	.long w_LITSTRING_cw             // 000106 		LITSTRING \'0x0000000C \"CATCH ( DSP=" 4+ DUP @ U. LITSTRING \'0x00000002 \") " 
+	.long w_drop_cw                 
+	.long w_LITSTRING_cw            
 	.long 0x0000000C                
 	.ascii "CATCH ( DSP="           
 	.long w_4plus_cw                
 	.long w_dup_cw                  
 	.long w_At_cw                   
-	.long w_Udotredef_cw            
+	.long w_Udot_cw                 
 	.long w_LITSTRING_cw            
 	.long 0x00000002                
 	.ascii ") "                     
-	.long w_branch_cw                // 000107 		BRANCH \'0x00000044 DUP CFA> ?DUP 0BRANCH \'0x0000002C DUP2 ID. LIT \'0x0000002B EMIT SWAP >DFA 4+ - . DROP 4+ BRANCH \'0xFFFFFF3A DROP CR ;
+	.long w_branch_cw               
 	.long 0x00000044                
 	.long w_dup_cw                  
 	.long w_CFAto_cw                
@@ -1055,7 +1258,7 @@ DEFWORD w_PRINT_STACK_TRACE,0,"PRINT-STACK-TRACE",f_docol // 000104 	: PRINT-STA
 	.long w_CR_cw                   
 	.long w_exit_cw                 
 
-DEFWORD w_Zquote,FLG_IMMEDIATE,"Z\"",f_docol // 000108 	: Z" ( "Zquote" ) IMMEDIATE STATE C@ 0BRANCH \'0x000000C0 ' LITSTRING , HERE D@ LIT \'0x00000000 , KEY DUP '"' <> 0BRANCH \'0x00000028 HERE D@ C! LIT \'0x00000001 HERE +! BRANCH \'0xFFFFFFC8 LIT \'0x00000000 HERE D@ C! LIT \'0x00000001 HERE +! DROP DUP HERE D@ SWAP - 4- SWAP ! ALIGN ' DROP , BRANCH \'0x00000054 HERE D@ KEY DUP '"' <> 0BRANCH \'0x00000018 OVER C! 1+ BRANCH \'0xFFFFFFD8 DROP LIT \'0x00000000 SWAP C! HERE D@ ;
+DEFWORD w_Zquote,FLG_IMMEDIATE,"Z\"",f_docol // 000086 	: Z" IMMEDIATE STATE C@ 0BRANCH \'0x000000C0 ' LITSTRING , HERE D@ LIT \'0x00000000 , KEY DUP '"' <> 0BRANCH \'0x00000028 HERE D@ C! LIT \'0x00000001 HERE +! BRANCH \'0xFFFFFFC8 LIT \'0x00000000 HERE D@ C! LIT \'0x00000001 HERE +! DROP DUP HERE D@ SWAP - 4- SWAP ! ALIGN ' DROP , BRANCH \'0x00000054 HERE D@ KEY DUP '"' <> 0BRANCH \'0x00000018 OVER C! 1+ BRANCH \'0xFFFFFFD8 DROP LIT \'0x00000000 SWAP C! HERE D@ ;
 	.long var_STATE_cw              
 	.long w_CharAt_cw               
 	.long w_0branch_cw              
@@ -1129,7 +1332,7 @@ DEFWORD w_Zquote,FLG_IMMEDIATE,"Z\"",f_docol // 000108 	: Z" ( "Zquote" ) IMMEDI
 	.long w_DoubleAt_cw             
 	.long w_exit_cw                 
 
-DEFWORD w_STRLEN,0,"STRLEN",f_docol      // 000109 	: STRLEN ( "STRLEN" ) DUP DUP C@ 0<> 0BRANCH \'0x00000010 1+ BRANCH \'0xFFFFFFE4 SWAP - ;
+DEFWORD w_STRLEN,0,"STRLEN",f_docol      // 000087 	: STRLEN DUP DUP C@ 0<> 0BRANCH \'0x00000010 1+ BRANCH \'0xFFFFFFE4 SWAP - ;
 	.long w_dup_cw                  
 	.long w_dup_cw                  
 	.long w_CharAt_cw               
@@ -1143,7 +1346,7 @@ DEFWORD w_STRLEN,0,"STRLEN",f_docol      // 000109 	: STRLEN ( "STRLEN" ) DUP DU
 	.long w_minus_cw                
 	.long w_exit_cw                 
 
-DEFWORD w_CSTRING,0,"CSTRING",f_docol    // 000110 	: CSTRING ( "CSTRING" ) SWAP OVER HERE D@ SWAP CMOVE HERE D@ + LIT \'0x00000000 SWAP C! HERE D@ ;
+DEFWORD w_CSTRING,0,"CSTRING",f_docol    // 000088 	: CSTRING SWAP OVER HERE D@ SWAP CMOVE HERE D@ + LIT \'0x00000000 SWAP C! HERE D@ ;
 	.long w_swap_cw                 
 	.long w_OVER_cw                 
 	.long var_HERE_cw               
@@ -1159,415 +1362,4 @@ DEFWORD w_CSTRING,0,"CSTRING",f_docol    // 000110 	: CSTRING ( "CSTRING" ) SWAP
 	.long w_CharStore_cw            
 	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
-	.long w_exit_cw                 
-
-DEFWORD w_SEE,0,"SEE",f_docol            // 000112 	: SEE ( "SEE" ) 
-	.long w_word_cw                  // 000113 		WORD FIND 
-	.long w_find_cw                 
-	.long var_HERE_cw                // 000114 		HERE D@ 
-	.long w_DoubleAt_cw             
-	.long var_LAST_cw                // 000115 		LAST D@ 
-	.long w_DoubleAt_cw             
-                                         // 000116 		( BEGIN )
-	.long w_lit_cw                   // 000117 			LIT \'0x00000005 PICK LIT \'0x00000005 PICK 
-	.long 0x00000005                
-	.long w_PICK_cw                 
-	.long w_lit_cw                  
-	.long 0x00000005                
-	.long w_PICK_cw                 
-	.long w_OVER2_cw                 // 000118 			OVER2 <>D 
-	.long w_notequalD_cw            
-                                         // 000119 		( WHILE )
-	.long w_0branch_cw               // 000120 			0BRANCH \'0x00000018 
-	.long 0x00000018                
-	.long w_NIP2_cw                  // 000121 			NIP2 DUP2 D@ 
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-                                         // 000122 		( REPEAT ) 
-	.long w_branch_cw                // 000123 		 BRANCH \'0xFFFFFFC8 
-	.long 0xFFFFFFC8                
-	.long w_drop_D_cw                // 000124 		 DROP2 SWAP2 
-	.long w_swap_D_cw               
-	.long w_quoted_colon_cw          // 000125 		 ':' EMIT SPACE DUP2 ID. SPACE 
-	.long w_emit_cw                 
-	.long w_SPACE_cw                
-	.long w_dup_D_cw                
-	.long w_IDdot_cw                
-	.long w_SPACE_cw                
-	.long w_dup_D_cw                 // 000126 		 DUP2 ?IMMEDIATE ( IF ) 0BRANCH \'0x0000001A LITSTRING \'0x0000000A \"IMMEDIATE " ( FI )
-	.long w_qIMMEDIATE_cw           
-	.long w_0branch_cw              
-	.long 0x0000001A                
-	.long w_LITSTRING_cw            
-	.long 0x0000000A                
-	.ascii "IMMEDIATE "             
-	.long w_ToDFA_cw                 // 000127 		 >DFA 
-                                         // 000128 		 ( BEGIN ) 
-	.long w_OVER2_cw                 // 000129 			OVER2 OVER2 >D
-	.long w_OVER2_cw                
-	.long w_greaterD_cw             
-	.long w_0branch_cw               // 000130 		( WHILE ) 0BRANCH \'0x0000031C 
-	.long 0x0000031C                
-	.long w_dup_D_cw                 // 000131 			DUP2 D@ 
-	.long w_DoubleAt_cw             
-                                         // 000132 			( CASE )
-	.long w_tick_cw                  // 000133 			' LIT \'0x0804DFC8 =D 0BRANCH \'0x00000034 DROP2 LIT \'0x00000000 LIT \'0x00000004 +D DUP2 @ . SPACE BRANCH \'0x000002B0 ' LIT2 \'0x0804DFC8 =D 0BRANCH \'0x00000040 DROP2 LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . SPACE BRANCH \'0x0000025C ' LITSTRING 
-	.long w_lit_cw                  
-	.long 0x0804DFC8                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000034                
-	.long w_drop_D_cw               
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_At_cw                   
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_branch_cw               
-	.long 0x000002B0                
-	.long w_tick_cw                 
-	.long w_lit2_cw                 
-	.long 0x0804DFC8                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000040                
-	.long w_drop_D_cw               
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_swap_cw                 
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_branch_cw               
-	.long 0x0000025C                
-	.long w_tick_cw                 
-	.long w_LITSTRING_cw            
-	.long w_OVER2_cw                 // 000134 			OVER2 =D 0BRANCH \'0x00000090 DROP2 LIT \'0x00000053 EMIT '"' EMIT SPACE LIT \'0x00000000 LIT \'0x00000004 +D DUP2 C@ SWAP21 LIT \'0x00000000 LIT \'0x00000004 +D SWAP12 OVER21 OVER12 TELL '"' EMIT SPACE +21 LIT \'0x00000000 LIT \'0x00000004 -D BRANCH \'0x000001B8 ' 0BRANCH \'0x0804DFC8 =D 0BRANCH \'0x00000060 DROP2 LITSTRING \'0x0000000A \"0BRANCH ( " LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . LITSTRING \'0x00000002 \") " BRANCH \'0x00000144 ' BRANCH \'0x0804DFC8 =D 0BRANCH \'0x0000005F DROP2 LITSTRING \'0x00000009 \"BRANCH ( " LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . LITSTRING \'0x00000002 \") " BRANCH \'0x000000D1 ' ' OVER2 =D 0BRANCH \'0x00000048 DROP2 LIT \'0x00000027 EMIT SPACE LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ CFA> ID. SPACE BRANCH \'0x00000075 ' ;
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000090                
-	.long w_drop_D_cw               
-	.long w_lit_cw                  
-	.long 0x00000053                
-	.long w_emit_cw                 
-	.long w_quoted_quote_cw         
-	.long w_emit_cw                 
-	.long w_SPACE_cw                
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_CharAt_cw               
-	.long w_swap_21_cw              
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_swap_12_cw              
-	.long w_OVER21_cw               
-	.long w_OVER12_cw               
-	.long w_TELL_cw                 
-	.long w_quoted_quote_cw         
-	.long w_emit_cw                 
-	.long w_SPACE_cw                
-	.long w_plus21_cw               
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_minus_D_cw              
-	.long w_branch_cw               
-	.long 0x000001B8                
-	.long w_tick_cw                 
-	.long w_0branch_cw              
-	.long 0x0804DFC8                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000060                
-	.long w_drop_D_cw               
-	.long w_LITSTRING_cw            
-	.long 0x0000000A                
-	.ascii "0BRANCH ( "             
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_swap_cw                 
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_dot_cw                  
-	.long w_LITSTRING_cw            
-	.long 0x00000002                
-	.ascii ") "                     
-	.long w_branch_cw               
-	.long 0x00000144                
-	.long w_tick_cw                 
-	.long w_branch_cw               
-	.long 0x0804DFC8                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x0000005F                
-	.long w_drop_D_cw               
-	.long w_LITSTRING_cw            
-	.long 0x00000009                
-	.ascii "BRANCH ( "              
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_swap_cw                 
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_dot_cw                  
-	.long w_LITSTRING_cw            
-	.long 0x00000002                
-	.ascii ") "                     
-	.long w_branch_cw               
-	.long 0x000000D1                
-	.long w_tick_cw                 
-	.long w_tick_cw                 
-	.long w_OVER2_cw                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000048                
-	.long w_drop_D_cw               
-	.long w_lit_cw                  
-	.long 0x00000027                
-	.long w_emit_cw                 
-	.long w_SPACE_cw                
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_CFAto_cw                
-	.long w_IDdot_cw                
-	.long w_SPACE_cw                
-	.long w_branch_cw               
-	.long 0x00000075                
-	.long w_tick_cw                 
-	.long w_exit_cw                 
-
-DEFWORD w_SEE2,0,"SEE",f_docol           // 000136 	: SEE ( "SEE2" ) 
-	.long w_word_cw                  // 000137 		WORD FIND HERE D@ LAST D@ LIT \'0x00000005 PICK LIT \'0x00000005 PICK OVER2 <>D 0BRANCH \'0x00000018 NIP2 DUP2 D@ BRANCH \'0xFFFFFFC8 DROP2 SWAP2 ':' EMIT SPACE DUP2 ID. SPACE DUP2 ?IMMEDIATE 0BRANCH \'0x0000001A LITSTRING \'0x0000000A \"IMMEDIATE " >DFA OVER2 OVER2 >D 0BRANCH \'0x0000031C DUP2 D@ ' LIT \'0x0804E068 =D 0BRANCH \'0x00000034 DROP2 LIT \'0x00000000 LIT \'0x00000004 +D DUP2 @ . SPACE BRANCH \'0x000002B0 ' LIT2 \'0x0804E068 =D 0BRANCH \'0x00000040 DROP2 LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . SPACE BRANCH \'0x0000025C ' LITSTRING OVER2 =D 0BRANCH \'0x00000090 DROP2 LIT \'0x00000053 EMIT '"' EMIT SPACE LIT \'0x00000000 LIT \'0x00000004 +D DUP2 C@ SWAP21 LIT \'0x00000000 LIT \'0x00000004 +D SWAP12 OVER21 OVER12 TELL '"' EMIT SPACE +21 LIT \'0x00000000 LIT \'0x00000004 -D BRANCH \'0x000001B8 ' 0BRANCH \'0x0804E068 =D 0BRANCH \'0x00000060 DROP2 LITSTRING \'0x0000000A \"0BRANCH ( " LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . LITSTRING \'0x00000002 \") " BRANCH \'0x00000144 ' BRANCH \'0x0804E068 =D 0BRANCH \'0x0000005F DROP2 LITSTRING \'0x00000009 \"BRANCH ( " LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ SWAP . SPACE . LITSTRING \'0x00000002 \") " BRANCH \'0x000000D1 ' ' OVER2 =D 0BRANCH \'0x00000048 DROP2 LIT \'0x00000027 EMIT SPACE LIT \'0x00000000 LIT \'0x00000004 +D DUP2 D@ CFA> ID. SPACE BRANCH \'0x00000075 ' ;
-	.long w_find_cw                 
-	.long var_HERE_cw               
-	.long w_DoubleAt_cw             
-	.long var_LAST_cw               
-	.long w_DoubleAt_cw             
-	.long w_lit_cw                  
-	.long 0x00000005                
-	.long w_PICK_cw                 
-	.long w_lit_cw                  
-	.long 0x00000005                
-	.long w_PICK_cw                 
-	.long w_OVER2_cw                
-	.long w_notequalD_cw            
-	.long w_0branch_cw              
-	.long 0x00000018                
-	.long w_NIP2_cw                 
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_branch_cw               
-	.long 0xFFFFFFC8                
-	.long w_drop_D_cw               
-	.long w_swap_D_cw               
-	.long w_quoted_colon_cw         
-	.long w_emit_cw                 
-	.long w_SPACE_cw                
-	.long w_dup_D_cw                
-	.long w_IDdot_cw                
-	.long w_SPACE_cw                
-	.long w_dup_D_cw                
-	.long w_qIMMEDIATE_cw           
-	.long w_0branch_cw              
-	.long 0x0000001A                
-	.long w_LITSTRING_cw            
-	.long 0x0000000A                
-	.ascii "IMMEDIATE "             
-	.long w_ToDFA_cw                
-	.long w_OVER2_cw                
-	.long w_OVER2_cw                
-	.long w_greaterD_cw             
-	.long w_0branch_cw              
-	.long 0x0000031C                
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_tick_cw                 
-	.long w_lit_cw                  
-	.long 0x0804E068                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000034                
-	.long w_drop_D_cw               
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_At_cw                   
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_branch_cw               
-	.long 0x000002B0                
-	.long w_tick_cw                 
-	.long w_lit2_cw                 
-	.long 0x0804E068                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000040                
-	.long w_drop_D_cw               
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_swap_cw                 
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_branch_cw               
-	.long 0x0000025C                
-	.long w_tick_cw                 
-	.long w_LITSTRING_cw            
-	.long w_OVER2_cw                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000090                
-	.long w_drop_D_cw               
-	.long w_lit_cw                  
-	.long 0x00000053                
-	.long w_emit_cw                 
-	.long w_quoted_quote_cw         
-	.long w_emit_cw                 
-	.long w_SPACE_cw                
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_CharAt_cw               
-	.long w_swap_21_cw              
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_swap_12_cw              
-	.long w_OVER21_cw               
-	.long w_OVER12_cw               
-	.long w_TELL_cw                 
-	.long w_quoted_quote_cw         
-	.long w_emit_cw                 
-	.long w_SPACE_cw                
-	.long w_plus21_cw               
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_minus_D_cw              
-	.long w_branch_cw               
-	.long 0x000001B8                
-	.long w_tick_cw                 
-	.long w_0branch_cw              
-	.long 0x0804E068                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000060                
-	.long w_drop_D_cw               
-	.long w_LITSTRING_cw            
-	.long 0x0000000A                
-	.ascii "0BRANCH ( "             
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_swap_cw                 
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_dot_cw                  
-	.long w_LITSTRING_cw            
-	.long 0x00000002                
-	.ascii ") "                     
-	.long w_branch_cw               
-	.long 0x00000144                
-	.long w_tick_cw                 
-	.long w_branch_cw               
-	.long 0x0804E068                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x0000005F                
-	.long w_drop_D_cw               
-	.long w_LITSTRING_cw            
-	.long 0x00000009                
-	.ascii "BRANCH ( "              
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_swap_cw                 
-	.long w_dot_cw                  
-	.long w_SPACE_cw                
-	.long w_dot_cw                  
-	.long w_LITSTRING_cw            
-	.long 0x00000002                
-	.ascii ") "                     
-	.long w_branch_cw               
-	.long 0x000000D1                
-	.long w_tick_cw                 
-	.long w_tick_cw                 
-	.long w_OVER2_cw                
-	.long w_equalD_cw               
-	.long w_0branch_cw              
-	.long 0x00000048                
-	.long w_drop_D_cw               
-	.long w_lit_cw                  
-	.long 0x00000027                
-	.long w_emit_cw                 
-	.long w_SPACE_cw                
-	.long w_lit_cw                  
-	.long 0x00000000                
-	.long w_lit_cw                  
-	.long 0x00000004                
-	.long w_plus_D_cw               
-	.long w_dup_D_cw                
-	.long w_DoubleAt_cw             
-	.long w_CFAto_cw                
-	.long w_IDdot_cw                
-	.long w_SPACE_cw                
-	.long w_branch_cw               
-	.long 0x00000075                
-	.long w_tick_cw                 
 	.long w_exit_cw                 
