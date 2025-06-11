@@ -185,6 +185,7 @@ dump            	w_dump
 export          	w_export
 export_all      	w_export_all
 ff              	const_ff
+firtsbuildinword	w_firtsbuildinword
 h2cw            	w_h2cw
 h2da            	w_h2da
 hex             	w_hex

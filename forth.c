@@ -162,7 +162,9 @@ extern const __memx char w_quit_data;
 extern const __memx DOUBLE_t		val_of_w_exit_cw;
 extern const __memx DOUBLE_t		val_of_f_docol;
 extern const __memx char w_lit2_cw;
+extern const __memx char w_firtsbuildinword_head;
 extern const __memx char w_lastbuildinword_head;
+extern const __memx char w_lastbuildinword_end;
 #define NEXT
 //#define NEXT f_next()
 //void f_next() __attribute__((noreturn));
@@ -795,6 +797,10 @@ void f_bin(){	// {{{
 // }}}
 DOUBLE_t cw2h(DOUBLE_t cw) {	// {{{ codeword address to head address
 //	TRACE("cw2h");
+	if ( ! (
+		( (B3U32(&w_firtsbuildinword_head) <= cw) && ( cw < B3U32(&w_lastbuildinword_end)) ) || 
+		( (B3U32(&RAM[0]) <= cw) && ( cw < HERE ) ) 
+		) ) { return 0; };
 	if (!cw) return 0;
 	if (!is_in_range(cw)) return 0;
 	uint8_t i =0;
@@ -1022,8 +1028,11 @@ void show(DOUBLE_t cw) {	// {{{ ; ' WORD show - try to show definition of WORD
 			DOUBLE_t hh=cw2h(val);
 			write_str(F("\r\n\t\t["));
 			if (hh) {
+// write_hex32(val);
+// write_str(F("("));
 				name_to_buf(val);
 				write_str(buf);
+// write_str(F(")"));
 			} else {
 				write_hex32(val);
 			};
@@ -1056,7 +1065,7 @@ void do_export(DOUBLE_t addr) {	// {{{ ; ' WORD export - try to export definitio
 	TRACE("do_export");
 	DOUBLE_t start,stop;
 	if (! get_bounds_of_word(addr,&start,&stop)) {
-printf("\ndo_export get_bounds_of_word(0x%08x, 0x%08x, 0x%08x)\n",addr, start, stop);
+// printf("\ndo_export get_bounds_of_word(0x%08x, 0x%08x, 0x%08x)\n",addr, start, stop);
 		ERROR("Not a word");return;
 	};
 //	DOUBLE_t cw=h2cw(start);
@@ -1559,6 +1568,11 @@ void f_CHAR() {	// {{{ // ( -- C) read one char
 	void f_EXECUTE() {	// {{{ // ( xt -- ) execute xt (&cw)
 	INFO("EXECUTE");
 	IP=pop2();
+	NEXT;
+}	// }}}
+void f_firtsbuildinword() {	// {{{ // ( -- h ) firts build in word - put its header addr on stack
+	INFO("firtsbuildinword");
+	push2(B3U32(&w_firtsbuildinword_head));
 	NEXT;
 }	// }}}
 void f_lastbuildinword() {	// {{{ // ( -- h ) last build in word - put its header addr on stack

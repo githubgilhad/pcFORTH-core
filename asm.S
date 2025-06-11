@@ -332,6 +332,7 @@ jmp_indirect_24:
 	.long 0		// emty codeword
 
 	// ;;; word definitions
+DEFWORD w_firtsbuildinword,0,"firtsbuildinword",f_firtsbuildinword	// ( -- h ) firts build in word - put its header addr on stack
 
 .macro PORT name,value	// {{{
 DEFCONST2 PIN\name, 0x800000+\value
@@ -357,11 +358,11 @@ PORT L, 0x109
 #elif defined(__PC__)
 DEFWORD w_memdump,	0,	"memdump",	f_memdump	// ( daddr len -- ) dump data to file
 DEFWORD w_traceback,	0,	"traceback",	f_traceback	// ( daddr len -- ) dump traceback data to file
+#endif
 DEFWORD w_dump, 	0,	"dump",	f_dump
 DEFWORD w_show, 	0,	"show",	f_show		// ( cw -- ) show  try to show definition of WORD addressed by codeword
 DEFWORD w_export, 	0,	"export",	f_export	// ( cw -- ) try to export definition of WORD addressed by codeword for forth2inc.py
 DEFWORD w_export_all, 	0,	"export_all",	f_export_all	// (  -- ) try to export definitions of all words for forth2inc.py
-#endif
 DEFVAR HERE
 DEFVAR LAST
 DEFVAR STATE
@@ -549,7 +550,8 @@ DEFWORD w_semicol,FLG_IMMEDIATE,";",f_docol
 
 
 DEFWORD w_lastbuildinword,0,"lastbuildinword",f_lastbuildinword	// ( -- h ) last build in word - put its header addr on stack
-
+	.global w_lastbuildinword_end
+w_lastbuildinword_end:
 	.global val_of_w_exit_cw, val_of_f_docol
 val_of_w_exit_cw:
 	.long w_exit_cw

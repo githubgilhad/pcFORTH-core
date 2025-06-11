@@ -14,16 +14,6 @@ A small Forth-like core for PC, for geting translation of new FORTH words to in-
 
 Based on `memxFORTH-core <https://github.com/githubgilhad/memxFORTH-core>`__
 
-NOTE
-====
-
-during bootstrap are needed some hacks
-
-* ( comment in braces ) - once the word `(` (open brace) is defined as IMMEDIATE, it cannot be simply redefined, as `: (` is colon and comment.
-	* in jones.4th change `: (` to `: ((` and it should work
-* `nick` - on line with `:` colon may be comment in form `( ... "nickname" ... )` and then nickname will be used in \*.inc 
-	* SEE (and possibly other words) contining such construction ( here `." BRANCH ( " 0 4 +D DUP2 D@ SWAP . SPACE . ." ) "` ) cannot have it on the colon line 
-		* simply add new line somewhere before it
 
 License
 -------

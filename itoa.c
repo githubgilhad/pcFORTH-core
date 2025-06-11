@@ -1,3 +1,4 @@
+#if defined(__PC__)
 	
 	/**
 	 * C++ version 0.4 char* style "itoa":
@@ -28,4 +29,4 @@
 		}
 		return result;
 	}
-	
+#endif

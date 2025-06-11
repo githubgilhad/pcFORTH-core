@@ -35,8 +35,8 @@
 
 #if defined(__AVR_ATmega328P__) || defined(__AVR_ATmega2560__)
 	#define RAM_LEN 	320	// word ~ 10B + name + 4 * words called - for start some 10 words should be enought
-	#define STACK_LEN	10
-	#define RSTACK_LEN	10
+	#define STACK_LEN	30
+	#define RSTACK_LEN	30
 #elif defined(__PC__)
 	#define RAM_LEN 	32000	// 32k should be enought for anyone :)
 	#define STACK_LEN	40
