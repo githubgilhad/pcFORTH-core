@@ -824,6 +824,25 @@ void f_h2da() {	// {{{ // ( h -- da ) convert head address to data address
 	push2(h);
 	NEXT;
 }	// }}}
+bool get_bounds_of_word(DOUBLE_t addr,DOUBLE_t *start, DOUBLE_t *stop) {	// {{{ // Find word at addr and returns start&stop, or false
+	*start=LAST;
+	*stop=HERE;
+// printf("get_bounds_of_word(0x%08x, 0x%p -> 0x%08x, 0x%p -> 0x%08x)\n",addr, start, *start,stop,*stop);
+	while (*start) {
+// printf("get_bounds_of_word loop( 0x%p -> 0x%08x, 0x%p -> 0x%08x)\n", start, *start,stop,*stop);
+		if ( (*start<=addr) && (addr<*stop)) {
+			uint8_t len=B1at(*start+5);
+//			printf("len: %d\n",len);
+			if (len>31) return false;  // misformed word
+			(*stop)-=4;
+			return true;
+		};
+		*stop=*start;
+		*start=B4at(*start);
+	};
+//	printf("end\n");
+	return false;
+}	// }}}
 uint8_t name_to_buf(DOUBLE_t cw) {	// {{{ fill name into global buf codeword - return flags
 	DOUBLE_t h=cw2h(cw);
 	if (!h) {ERROR("Not a word");strcpy_P(buf,F(" Not a word "));return 0;};
@@ -840,7 +859,7 @@ void f_memdump() {	// {{{ // ( daddr len -- ) dump data to file
 	INFO("memdump");
 	DOUBLE_t addr2=pop2();
 	DOUBLE_t addr=pop2();
-	const char  *fname = "dump.bin";
+	const char  *fname = "._dump.bin";
 	memdump(addr,addr2-addr,fname);
 	NEXT;
 }	// }}}
@@ -885,39 +904,32 @@ void file_do_export(FILE *f, DOUBLE_t h, DOUBLE_t top) {	// {{{
 			fprintf(f," \\\"");
 			while (val--) fprintf(f,"%c",B1at(cw++));
 			fprintf(f,"\"" );
+			cw-=4;	// we are already at next pos, but loop will add 4 anyway
 			val=0;
 		};
 	} while (cw < top);
 }	// }}}
 void traceback_word(FILE *f, uint16_t depth, DOUBLE_t addr) {	// {{{ // Find word and dump actual position in it
-	DOUBLE_t h=LAST;
-	DOUBLE_t top=HERE;
 	for (int8_t d=0;d<=depth;d++) fprintf(f,"\t");
 	fprintf(f,"0x%08x .. ",addr);
 	fflush(f);
-	while (h) {
-		if ( (h<addr) && (addr<top)) {
-			uint8_t len=B1at(h+5);
-			if (len>31) break; // misformed word
-			if ((addr-h) <(6+len+4)) break; // misformed word
-			for (int8_t i=0;i<len; i++) fprintf(f,"%c",B1at(h+6+i));
-			fprintf(f," : at data+%d :", (addr-h-10-len));
+	DOUBLE_t start,stop;
+	if (get_bounds_of_word(addr,&start,&stop)) {
+			uint8_t len=B1at(start+5);
+			for (int8_t i=0;i<len; i++) fprintf(f,"%c",B1at(start+6+i));
+			fprintf(f," : at data+%d :", (addr-start-10-len));
 			fflush(f);
-			file_do_export(f, h, addr);
+			file_do_export(f, start, addr);
 			fprintf(f,"\n");
-			return;
-		};
-		// do_export(h,top);
-		top=h;
-		h=B4at(h);
+	} else {
+		fprintf(f,"NOT A WORD, maybe value? %d\n", addr);
 	};
-	fprintf(f,"NOT A WORD, maybe value? %d\n", addr);
 }	// }}}
 #ifndef min
 #define min(a,b)            (((a) < (b)) ? (a) : (b))
 #endif
 void do_traceback(){	// {{{ dump traceback data to file
-	FILE *f = fopen("traceback.log","a");
+	FILE *f = fopen("._traceback.log","a");
 	if (!f) {
 		perror("fopen");
 		return;
@@ -973,11 +985,23 @@ void show(DOUBLE_t cw) {	// {{{ ; ' WORD show - try to show definition of WORD
 	TRACE("show");
 	DOUBLE_t h=cw2h(cw);
 	DOUBLE_t val;
+	write_eoln();
 	uint8_t flags;
 	if (!h) {ERROR("Not a word");return;};
-	show_name(cw, 0);
+//	show_name(cw, 0);
+	flags=name_to_buf(cw);
+	write_str(F(STR_2LESS));
+	write_str(buf);
+	write_str(F(STR_2MORE));
+	if (flags & FLG_HIDDEN) write_str(F(" HIDDEN "));
+	if (flags & FLG_IMMEDIATE) write_str(F(" IMMEDIATE "));
 	write_eoln();
 	if (val_of_f_docol != B3at(cw)) return;	// neumim rozepsat
+	DOUBLE_t start,stop;
+	if (! get_bounds_of_word(cw,&start,&stop)) {
+		write_str(F("Failed\n"));
+		return;
+	};
 	do {
 		cw+=4;
 	DEBUG_DUMP(cw,"code\t");
@@ -986,12 +1010,23 @@ void show(DOUBLE_t cw) {	// {{{ ; ' WORD show - try to show definition of WORD
 //		write_str(F("\t["));
 //		write_hex32(val);
 //		write_str(F("] "));
-		flags=show_name(val,cw);
+//		flags=show_name(val,cw);
+		flags=name_to_buf(val);
+		write_str(buf);
+		if (!noinfo) {
+			write_str(F("\t\t ("));write_hex32(cw);write_str(F(") "));
+		};
 		if (flags & FLG_ARG) {
 			cw+=4;
 			val=B4at(cw);
+			DOUBLE_t hh=cw2h(val);
 			write_str(F("\r\n\t\t["));
-			write_hex32(val);
+			if (hh) {
+				name_to_buf(val);
+				write_str(buf);
+			} else {
+				write_hex32(val);
+			};
 			write_str(F("]"));
 			val=0;
 		}
@@ -1004,10 +1039,11 @@ void show(DOUBLE_t cw) {	// {{{ ; ' WORD show - try to show definition of WORD
 			write_str(F(" '"));
 			while (val--) write_charA(B1at(cw++));
 			write_str(F("']"));
+			cw-=4;	// we are already at next pos, but loop will add 4 anyway
 			val=0;
 		};
 		write_eoln();
-	} while (val != val_of_w_exit_cw);
+	} while (cw<stop);
 
 }	// }}}
 void f_show() {	// {{{ ; ' WORD show - try to show definition of WORD
@@ -1016,14 +1052,19 @@ void f_show() {	// {{{ ; ' WORD show - try to show definition of WORD
 	show(cw);
 	NEXT;
 }	// }}}
-void do_export(DOUBLE_t h, DOUBLE_t top) {	// {{{ ; ' WORD export - try to export definition of WORD
-	TRACE("export");
-//	DOUBLE_t cw=h2cw(h);
-	DOUBLE_t cw=h+5;
+void do_export(DOUBLE_t addr) {	// {{{ ; ' WORD export - try to export definition of WORD
+	TRACE("do_export");
+	DOUBLE_t start,stop;
+	if (! get_bounds_of_word(addr,&start,&stop)) {
+printf("\ndo_export get_bounds_of_word(0x%08x, 0x%08x, 0x%08x)\n",addr, start, stop);
+		ERROR("Not a word");return;
+	};
+//	DOUBLE_t cw=h2cw(start);
+	DOUBLE_t cw=start+5;
 	cw+=1+B1at(cw);
 	DOUBLE_t val;
 	uint8_t flags;
-	if (!h) {ERROR("Not a word");return;};
+	if (!start) {ERROR("Not a word");return;};
 	write_eoln();
 	write_str(F(": "));
 	flags = name_to_buf(cw);
@@ -1036,7 +1077,7 @@ void do_export(DOUBLE_t h, DOUBLE_t top) {	// {{{ ; ' WORD export - try to expor
 	do {
 		cw+=4;
 		val=B4at(cw);
-		if (val == val_of_w_exit_cw) break;
+		if ((val == val_of_w_exit_cw) && (cw>=stop)) break;
 		write_char(' ');
 		flags=name_to_buf(val);
 		write_str(buf);
@@ -1063,9 +1104,10 @@ void do_export(DOUBLE_t h, DOUBLE_t top) {	// {{{ ; ' WORD export - try to expor
 			write_str(F(" \\\""));
 			while (val--) write_charA(B1at(cw++));
 			write_str(F("\""));
+			cw-=4;	// we are already at next pos, but loop will add 4 anyway
 			val=0;
 		};
-	} while (cw < top);
+	} while (cw < stop);
 //	} while (val != val_of_w_exit_cw);
 	write_str(F(" ;"));
 	write_eoln();
@@ -1074,18 +1116,14 @@ void do_export(DOUBLE_t h, DOUBLE_t top) {	// {{{ ; ' WORD export - try to expor
 void f_export() {	// {{{ ; ' WORD export - try to export definition of WORD
 	TRACE("export");
 	DOUBLE_t cw=pop2();
-	DOUBLE_t top=HERE;
-	DOUBLE_t h=cw2h(cw);
-	do_export(h,top);
+	do_export(cw);
 	NEXT;
 }	// }}}
 void f_export_all() {	// {{{ // (  -- ) try to export definitions of all words for forth2inc.py
 	INFO("export_all");
 	DOUBLE_t h=LAST;
-	DOUBLE_t top=HERE;
 	while (h>=B3U32(RAM)) {
-		do_export(h,top);
-		top=h;
+		do_export(h);
 		h=B4at(h);
 	};
 	NEXT;

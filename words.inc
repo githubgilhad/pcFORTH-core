@@ -40,12 +40,14 @@ DEFWORD w_THEN,FLG_IMMEDIATE,"THEN",f_docol // 000005 	: THEN IMMEDIATE FI ;
 	.long w_FI_cw                   
 	.long w_exit_cw                 
 
-DEFWORD w_ELSE,FLG_IMMEDIATE,"ELSE",f_docol // 000006 	: ELSE IMMEDIATE ' BRANCH , HERE D@ LIT \'0x00000000 , SWAP2 FI ;
+DEFWORD w_ELSE,FLG_IMMEDIATE,"ELSE",f_docol // 000006 	: ELSE IMMEDIATE ' BRANCH , HERE D@ LIT \'0x00000000 LIT \'0x00000000 , SWAP2 FI ;
 	.long w_tick_cw                 
 	.long w_branch_cw               
 	.long w_comma_cw                
 	.long var_HERE_cw               
 	.long w_DoubleAt_cw             
+	.long w_lit_cw                  
+	.long 0x00000000                
 	.long w_lit_cw                  
 	.long 0x00000000                
 	.long w_comma_cw                

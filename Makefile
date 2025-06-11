@@ -102,15 +102,15 @@ version: $(VERSION_HEADER)
 
 $(BUILD_DIR)/asm.o: words.inc jones.inc 
 
-$(BUILD_DIR)/asm.export: Makefile
-	./forth2inc.py -v -e $@ asm.S
+$(BUILD_DIR)/asm.export: asm.S Makefile
+	./forth2inc.py $(VERBOSE) -e $@ asm.S
 	@if ! cmp -s $(BUILD_DIR)/asm.export asm.names; then \
 		cp $(BUILD_DIR)/asm.export asm.export; \
 		echo -e "\x1b[1m\x1b[41m vimdiff asm.export asm.names \x1b[0m"; \
 		else rm -f asm.export; fi
 
 words.inc $(BUILD_DIR)/words.export &: words.4int words.names asm.S Makefile 	| $(BUILD_DIR)/asm.export
-	./forth2inc.py -v  -o words.inc -e $(BUILD_DIR)/words.export -t words.names -s words.4int asm.S
+	./forth2inc.py $(VERBOSE)  -o words.inc -e $(BUILD_DIR)/words.export -t words.names -s words.4int asm.S
 	@comm -1 -3 $(BUILD_DIR)/asm.export $(BUILD_DIR)/words.export >$(BUILD_DIR)/words.export2
 	@if ! cmp -s $(BUILD_DIR)/words.export2 words.names; then \
 		cp $(BUILD_DIR)/words.export2 words.export; \
@@ -119,7 +119,7 @@ words.inc $(BUILD_DIR)/words.export &: words.4int words.names asm.S Makefile 	| 
 
 
 jones.inc $(BUILD_DIR)/jones.export &: jones.4int words.inc jones.names asm.S Makefile	| $(BUILD_DIR)/words.export
-	./forth2inc.py -v  -o jones.inc -e $(BUILD_DIR)/jones.export -t jones.names -s jones.4int words.inc asm.S
+	./forth2inc.py $(VERBOSE)  -o jones.inc -e $(BUILD_DIR)/jones.export -t jones.names -s jones.4int words.inc asm.S
 	@comm -1 -3 $(BUILD_DIR)/words.export $(BUILD_DIR)/jones.export >$(BUILD_DIR)/jones.export2
 	@if ! cmp -s $(BUILD_DIR)/jones.export2 jones.names; then \
 		cp $(BUILD_DIR)/jones.export2 jones.export; \
@@ -131,7 +131,7 @@ jones.inc $(BUILD_DIR)/jones.export &: jones.4int words.inc jones.names asm.S Ma
 	touch $@
 
 clean:
-	$(RM) -r $(BUILD_DIR) $(TARGET) $(TARGET).dis
+	$(RM) -r $(BUILD_DIR) $(TARGET) $(TARGET).dis *.export
 
 help:
 	@echo "Jednoduchý Makefile pro překlad *.c/*.cpp/*.S na Linux (x86_64)"

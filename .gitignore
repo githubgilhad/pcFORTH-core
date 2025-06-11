@@ -4,11 +4,10 @@
 *.elf
 *.elf.dis
 *.export
+._*
 tmp
 old
 build
 build-*
 tags
-traceback.log
-dump.bin*
 version.h

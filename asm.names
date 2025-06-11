@@ -188,6 +188,7 @@ ff              	const_ff
 h2cw            	w_h2cw
 h2da            	w_h2da
 hex             	w_hex
+lastbuildinword 	w_lastbuildinword
 memdump         	w_memdump
 nodebug         	w_nodebug
 noinfo          	w_noinfo

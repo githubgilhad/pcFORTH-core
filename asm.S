@@ -545,7 +545,7 @@ DEFWORD w_semicol,FLG_IMMEDIATE,";",f_docol
 	.long w_left_brac_cw, w_exit_cw			// back to immediate
 
 #include "words.inc"
-//	#include "jones.inc"
+#include "jones.inc"
 
 
 DEFWORD w_lastbuildinword,0,"lastbuildinword",f_lastbuildinword	// ( -- h ) last build in word - put its header addr on stack

@@ -436,17 +436,6 @@ dec
 	2 C>D -D SWAP DROP /2			( adjust because S0 was on the stack when we pushed DSP )
 ;
 
-(
-	ALIGNED takes an address and rounds it up (aligns it) to the next 4 byte boundary.
-)
-: ALIGNED	( addr -- addr )
-	0 3 +D 3 INVERT AND	( (addr+3) & ~3 )
-;
-
-(
-	ALIGN aligns the HERE pointer, so the next word appended will be aligned properly.
-)
-: ALIGN HERE D@ ALIGNED HERE D! ;
 
 (
 	STRINGS ----------------------------------------------------------------------
@@ -490,7 +479,6 @@ dec
 		HERE D@ SWAP2 -D	( calculate the length )
 		4D-		( subtract 4 (because we measured from the start of the length word) )
 		SWAP2 D! 		( and back-fill the length location )
-\		ALIGN		( round up to next multiple of 4 bytes for the remaining code )
 	ELSE		( immediate mode )
 		HERE D@		( get the start address of the temporary space )
 		BEGIN
@@ -1161,7 +1149,7 @@ dec
 \ .s
 			OVER21 OVER12 TELL		( print the string )
 			'"' EMIT SPACE		( finish the string with a final quote )
-			+21 \ ALIGNED		( end start+4+len, aligned )
+			+21 		( end start+4+len )
 \ .s
 			0 4 -D			( because we're about to add 4 below )
 		ENDOF
@@ -1515,7 +1503,6 @@ dec
 		HERE D@ SWAP -	( calculate the length )
 		4-		( subtract 4 (because we measured from the start of the length word) )
 		SWAP !		( and back-fill the length location )
-		ALIGN		( round up to next multiple of 4 bytes for the remaining code )
 		' DROP ,	( compile DROP (to drop the length) )
 	ELSE		( immediate mode )
 		HERE D@		( get the start address of the temporary space )
@@ -1750,7 +1737,6 @@ HEX
 
 : ;CODE IMMEDIATE
 	[COMPILE] NEXT		( end the word with NEXT macro )
-	ALIGN			( machine code is assembled in bytes so isn't necessarily aligned at the end )
 	LAST @ DUP
 	HIDDEN			( unhide the word )
 	DUP >DFA SWAP >CFA !	( change the codeword to point to the data area )
