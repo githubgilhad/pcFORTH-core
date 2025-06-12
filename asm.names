@@ -69,12 +69,17 @@
 @R              	w_CellAtR
 AND             	w_and
 BASE            	var_BASE
+BIOS_COLS       	const_BIOS_COLS
+BIOS_ROWS       	const_BIOS_ROWS
 BRANCH          	w_branch
 C!              	w_CharStore
 C@              	w_CharAt
 CHAR            	w_CHAR
+CLS             	w_CLS
 CMOVE           	w_CMOVE
+CRAM            	const_CRAM
 CREATE          	w_create
+CUR_yx          	w_CUR_yx
 D!              	w_DoubleStore
 D4C             	w_D4C
 D>R             	w_DoubleToR
@@ -113,6 +118,7 @@ INTERPRET       	w_interpret
 INVERT          	w_INVERT
 ISNULL          	w_isnull
 KEY             	w_key
+KEYpress        	w_KEYpress
 LAST            	var_LAST
 LIT             	w_lit
 LIT2            	w_lit2
@@ -171,6 +177,9 @@ S_END           	const_S_END
 TELL            	w_TELL
 TEST            	w_test
 TROUBLE         	w_trouble
+VRAM            	const_VRAM
+VRAM_yx         	w_VRAM_yx
+WAIT            	w_WAIT
 WORD            	w_word
 WORDS           	w_words
 XOR             	w_xor
@@ -186,6 +195,7 @@ export          	w_export
 export_all      	w_export_all
 ff              	const_ff
 firtsbuildinword	w_firtsbuildinword
+getword         	w_getword
 h2cw            	w_h2cw
 h2da            	w_h2da
 hex             	w_hex

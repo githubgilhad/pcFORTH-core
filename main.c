@@ -84,9 +84,6 @@ void setup() {
 	printf("  based on %s - %s\n", VERSION_COMMIT, VERSION_MESSAGE);
 	printf("---- ==== #### FORTH #### ==== ----\n");
 	printf("Hint: 0 nodebug 0 noinfo 0 notrace LAST D@ 20 + dump\n");
-	printf("Hint: hex ff DDRF !C aa PORTF !C ff DDRK !C aa PORTK !C : x ff  PINF !C ff  PINK !C ; x \n");
-	printf(": count- 0 BEGIN DUP c2C PORTF !C PORTK !C 1- DUP ==0 UNTIL c2C PORTF !C PORTK !C ;\n");
-	printf(": count+ 0 BEGIN DUP c2C PORTF !C PORTK !C 1 + DUP ==0 UNTIL c2C PORTF !C PORTK !C ;\n");
 	printf("Test: : xx 0BRANCH [ 0 0C , ] 0 ; : xxx IF 1111 ELSE 2222 FI 3333 + ;\n");
 
 	my_setup();
