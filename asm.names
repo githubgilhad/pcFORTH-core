@@ -69,15 +69,12 @@
 @R              	w_CellAtR
 AND             	w_and
 BASE            	var_BASE
-BIOS_COLS       	const_BIOS_COLS
-BIOS_ROWS       	const_BIOS_ROWS
 BRANCH          	w_branch
 C!              	w_CharStore
 C@              	w_CharAt
 CHAR            	w_CHAR
 CLS             	w_CLS
 CMOVE           	w_CMOVE
-CRAM            	const_CRAM
 CREATE          	w_create
 CUR_yx          	w_CUR_yx
 D!              	w_DoubleStore
@@ -116,6 +113,7 @@ HIDDEN          	w_hidden
 IMMEDIATE       	w_immediate
 INTERPRET       	w_interpret
 INVERT          	w_INVERT
+ISINSTR         	w_ISINSTR
 ISNULL          	w_isnull
 KEY             	w_key
 KEYpress        	w_KEYpress
@@ -152,6 +150,7 @@ PORTH           	const_PORTH
 PORTJ           	const_PORTJ
 PORTK           	const_PORTK
 PORTL           	const_PORTL
+POS             	w_POS
 QUIT            	w_quit
 R!              	w_SetRStack
 R0              	const_R0
@@ -160,6 +159,7 @@ R>D             	w_DoubleFromR
 R?              	w_RStackAddress
 RAM             	const_RAM
 RAM_END         	const_RAM_END
+RANDOM          	w_RANDOM
 RDROP           	w_rdrop
 RETURN          	w_return
 ROT             	w_ROT
@@ -177,8 +177,9 @@ S_END           	const_S_END
 TELL            	w_TELL
 TEST            	w_test
 TROUBLE         	w_trouble
-VRAM            	const_VRAM
 VRAM_yx         	w_VRAM_yx
+VRAM_yx!        	w_storeVRAM_yx
+VRAM_yx@        	w_fetchVRAM_yx
 WAIT            	w_WAIT
 WORD            	w_word
 WORDS           	w_words

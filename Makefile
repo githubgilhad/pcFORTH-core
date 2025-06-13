@@ -1,7 +1,7 @@
 TARGET := pcFORTH.elf
 BUILD_DIR := build-pc
 
-DEFINES+= -DOUTPUT_TARGET=OUTPUT_TARGET_terminal -D__PC__
+DEFINES+= -DOUTPUT_TARGET=OUTPUT_TARGET_terminal -D__PC__ -D__PORTABLE_GRAPHIC__
 
 CC := gcc
 CXX := g++

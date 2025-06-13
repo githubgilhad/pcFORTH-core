@@ -726,10 +726,9 @@ dec
 	>DFA		( get a pointer to the first data field (the 'LIT') )
 	4+		( increment to point at the value )
 	STATE C@ IF	( compiling? )
-		' LIT ,		( compile LIT )
-		C>D		( convert stack to double )
+		' LIT2 ,	( compile LIT )
 		,		( compile the address of the value )
-		' D! ,		( compile ! )
+		' ! ,		( compile ! )
 	ELSE		( immediate mode )
 		!		( update it straightaway )
 	THEN
@@ -756,8 +755,7 @@ dec
 	>DFA		( get a pointer to the first data field (the 'LIT') )
 	4+		( increment to point at the value )
 	STATE C@ IF	( compiling? )
-		' LIT ,		( compile LIT )
-		C>D		( convert stack to double )
+		' LIT2 ,	( compile LIT )
 		,		( compile the address of the value )
 		' +! ,		( compile +! )
 	ELSE		( immediate mode )
@@ -1562,6 +1560,7 @@ dec
 	The first word that we define, ARGC, pushes the number of command line arguments (note that
 	as with C argc, this includes the name of the command).
 )
+(         ( it is not this way )
 : ARGC
 	S0 @ @
 ;
@@ -1591,7 +1590,6 @@ dec
 	CELLS		( convert to an offset )
 	S0 @ +		( add to base stack address )
 ;
-(
 (
 	SYSTEM CALLS AND FILES  ----------------------------------------------------------------------
 

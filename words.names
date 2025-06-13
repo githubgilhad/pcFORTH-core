@@ -5,6 +5,7 @@ FI              	w_FI
 FORGET          	w_FORGET
 HIDE            	w_HIDE
 IF              	w_IF
+IFNOT           	w_IFNOT
 REPEAT          	w_REPEAT
 THEN            	w_THEN
 UNTIL           	w_UNTIL

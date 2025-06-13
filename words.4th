@@ -9,6 +9,12 @@
 	HERE D@ 0 0 ,				\	.long var_HERE_cw, w_DoubleAt_cw, w_lit2_cw,0,w_comma_cw	; save this pos, fill 0 for now
 	;					\	.long w_exit_cw
 
+: IFNOT IMMEDIATE				\ DEFWORD w_ifnot, FLG_IMMEDIATE, "IFNOT", f_docol		; do if zero
+	' 0= ,					\	.long w_tick_cw,w_zero_cw,w_comma_cw	; if zero set true
+	' 0BRANCH ,				\	.long w_tick_cw, w_0branch_cw,w_comma_cw	; if zero, branch
+	HERE D@ 0 0 ,				\	.long var_HERE_cw, w_DoubleAt_cw, w_lit2_cw,0,w_comma_cw	; save this pos, fill 0 for now
+	;					\	.long w_exit_cw
+
 : FI IMMEDIATE					\ DEFWORD w_fi, FLG_IMMEDIATE, "FI", f_docol		; fi - end of IF
 	DUP2 HERE D@ SWAP2 -D SWAP2 !D ;	\	.long w_dup_D_cw, var_HERE_cw, w_DoubleAt_cw, w_swap_D_cw, w_minus_D_cw, w_swap_D_cw,w_StoreDouble_cw,w_exit_cw
 
