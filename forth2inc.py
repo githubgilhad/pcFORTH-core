@@ -44,11 +44,12 @@ def load_translations(asmfile):
 
 def load_known_words(asmfile):
 	global known
-	patternDW = re.compile(r'^\s*DEFWORD\s+(\w+\\?),[^,]*,\s*"([^"]+)",')
-	patternDV = re.compile(r'^\s*DEFVAR\s+(\w+\\?)')
-	patternDC1 = re.compile(r'^\s*DEFCONST1\s+(\w+\\?)')
-	patternDC2 = re.compile(r'^\s*DEFCONST2\s+(\w+\\?)')
-	patternPORT = re.compile(r'^\s*PORT\s+(\w+\\?),')
+	patternDW = re.compile(r'^\s*DEFWORD\s+"?(\w+)"?,[^,]*,\s*"([^"]+)",')
+	patternDV = re.compile(r'^\s*DEFVAR\s+"?(\w+)"?')
+	patternDC = re.compile(r'^\s*DEFCONST\s+"?(\w+)"?')
+	patternDC1 = re.compile(r'^\s*DEFCONST1\s+"?(\w+)"?,')
+	patternDC2 = re.compile(r'^\s*DEFCONST2\s+"?(\w+)"?,')
+	patternPORT = re.compile(r'^\s*PORT\s+(\w+),')
 	try:
 		with open(asmfile, encoding='utf-8') as f:
 			for line in f:
@@ -61,6 +62,10 @@ def load_known_words(asmfile):
 				if m:
 					name, = m.groups()
 					known[name] = "var_"+name
+				m = patternDC.search(line)
+				if m:
+					name, = m.groups()
+					known[name] = "const_"+name
 				m = patternDC1.search(line)
 				if m:
 					name, = m.groups()

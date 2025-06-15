@@ -7,14 +7,14 @@
 : '#' [ 0 CHAR # ] LITERAL ;
 ( score, max )
 0 0 0 0 VALUE score VALUE maxscore VALUE crash VALUE grow
-: show_score 
-	1 2 CUR_yx  ." SCORE: " score . 
+: show_score
+	1 2 CUR_yx  ." SCORE: " score .
 	score maxscore > IF score TO maxscore 1 MAX_COLS /2 1- CUR_yx '#' EMIT FI
-	1 MAX_COLS /2   CUR_yx  ." MAX: " maxscore . 
+	1 MAX_COLS /2   CUR_yx  ." MAX: " maxscore .
 	;
 ( wall )
-: wall CLS 
-	0 BEGIN 0 OVER '#' VRAM_yx! 2 OVER '#' VRAM_yx! MAX_ROWS 1- OVER '#' VRAM_yx!  1+ DUP MAX_COLS  = UNTIL DROP 
+: wall CLS
+	0 BEGIN 0 OVER '#' VRAM_yx! 2 OVER '#' VRAM_yx! MAX_ROWS 1- OVER '#' VRAM_yx!  1+ DUP MAX_COLS  = UNTIL DROP
 	0 BEGIN                     DUP  0 '#' VRAM_yx! DUP MAX_COLS 1-  '#' VRAM_yx!  1+ DUP MAX_ROWS  = UNTIL DROP
 	1 2 CUR_yx ." SCORE:" 0 . SPACE
 	;
@@ -54,11 +54,11 @@
 : show_tail ty tx tail_str_addr td +21 C@ VRAM_yx! ;
 : test_tail ( y x --  )  VRAM_yx@ is_tail IF 2 TO crash THEN ;
 : move_tail
-	grow crash ||  
+	grow crash ||
 	IFNOT
-		hide_tail 
+		hide_tail
 		ty tx td do_step DUP2 TO tx TO ty VRAM_yx@ body_str POS IFNOT 10 TO crash ELSE 4 MOD  TO td FI
-		show_tail 
+		show_tail
 	THEN
 	;
 ( head )
@@ -66,15 +66,15 @@
 : hide_head hy hx BL VRAM_yx! ;
 : show_head hy hx head_str_addr hd +21 C@ VRAM_yx! ;
 : move_head
-	10 WAIT hide_head 
+	10 WAIT hide_head
 	hy hx hd ( body here )
 		hy hx ( new head )
 			hd KEYpress key_to_dir ( dir )
 			DUP TO hdd
-			do_step 
-		DUP2 test_body 
-		DUP2 test_tail 
-		DUP2 test_wall 
+			do_step
+		DUP2 test_body
+		DUP2 test_tail
+		DUP2 test_wall
 		DUP2 test_fruit
 		crash IF DROP DROP2 DROP2 ELSE
 		TO hx TO hy hdd TO hd
@@ -82,22 +82,22 @@
 		THEN
 	show_head ;
 
-: had wall show_score 
-	MAX_COLS /2 TO hx 
+: snake wall show_score
+	MAX_COLS /2 TO hx
 	MAX_ROWS /2 TO hy
 	2 TO hd
 	0 TO score
 	show_head
 	hx 1- TO tx hy TO ty hd TO td show_tail
 	0 TO crash
-	BEGIN 
-		0 TO grow 
-		move_head 
-		move_tail 
-		show_fruit 
+	BEGIN
+		0 TO grow
+		move_head
+		move_tail
+		show_fruit
 		show_score
 (		BEGIN KEYpress 0= UNTIL )
-	crash UNTIL 
-	2 0 CUR_yx  crash 1 = IF ." * Hlavou ne ! *" ELSE ." * JAUVAJS *" THEN
+	crash UNTIL
+	2 0 CUR_yx  crash 1 = IF ." * Avoid Walls ! *" ELSE ." * Avoid yourself *" THEN
 	;
- had 
+snake

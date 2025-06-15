@@ -75,6 +75,7 @@ C@              	w_CharAt
 CHAR            	w_CHAR
 CLS             	w_CLS
 CMOVE           	w_CMOVE
+CRAM            	const_CRAM
 CREATE          	w_create
 CUR_yx          	w_CUR_yx
 D!              	w_DoubleStore
@@ -121,6 +122,8 @@ LAST            	var_LAST
 LIT             	w_lit
 LIT2            	w_lit2
 LITSTRING       	w_LITSTRING
+MAX_COLS        	const_MAX_COLS
+MAX_ROWS        	const_MAX_ROWS
 NOTNULL         	w_notnull
 NUMBER          	w_number
 OR              	w_or
@@ -177,6 +180,7 @@ S_END           	const_S_END
 TELL            	w_TELL
 TEST            	w_test
 TROUBLE         	w_trouble
+VRAM            	const_VRAM
 VRAM_yx         	w_VRAM_yx
 VRAM_yx!        	w_storeVRAM_yx
 VRAM_yx@        	w_fetchVRAM_yx
@@ -188,6 +192,14 @@ XOR             	w_xor
 ]               	w_right_brac
 aa              	const_aa
 bin             	w_bin
+bit0            	const_bit0
+bit1            	const_bit1
+bit2            	const_bit2
+bit3            	const_bit3
+bit4            	const_bit4
+bit5            	const_bit5
+bit6            	const_bit6
+bit7            	const_bit7
 c2C             	w_c2C
 cw2h            	w_cw2h
 dec             	w_dec
