@@ -16,7 +16,7 @@
 	#include "memdump.h"
 	#include <stdio.h>
 	#define PEDANT
-	#include <unistd.h> 
+	#include <unistd.h>
 #endif
 extern uint8_t B1at(uint32_t p);			// asm.S	read 1 byte at address p (somewhere), return 1 byte
 extern uint16_t B2at(uint32_t p);			// asm.S	read 2 bytes at address p (somewhere), return 2 bytes
@@ -50,11 +50,11 @@ char read_char() {
 #endif
 
 void write_num8(uint8_t n) {	// {{{
-	if (n>99) { 
+	if (n>99) {
 		write_char('0'+ n/100);
 		n=n % 100;
 		};
-	if (n>9) { 
+	if (n>9) {
 		write_char('0'+ n/10);
 		n=n % 10;
 		};
@@ -1606,7 +1606,7 @@ void f_ISINSTR() {	// {{{ // ( char addr len  -- flag ) if char is in string
 	CELL_t c=pop();
 	uint32_t i=0;
 	for (; i<l; ++i,++addr) if (c==B1at(addr)) break;
-	if (i<l) { 
+	if (i<l) {
 		push(F_TRUE);
 	} else {
 		push(F_FALSE);
@@ -1620,7 +1620,7 @@ void f_POS() {	// {{{ // ( char addr len  -- (pos) flag ) return flag and if fou
 	CELL_t c=pop();
 	uint32_t i=0;
 	for (; i<l; ++i,++addr) if (c==B1at(addr)) break;
-	if (i<l) { 
+	if (i<l) {
 		push(i); push(F_TRUE);
 	} else {
 		push(F_FALSE);
@@ -1667,8 +1667,41 @@ void f_VRAM_yx() {	// {{{ // ( y x -- daddr ) y row, x column, daddr addr in VRA
 	push2(B3U32(&vram[y][x]));
 	NEXT;
 }	// }}}
+void f_fetchVRAM_yx() {	// {{{ // ( y x -- c ) y row, x column, c character in VRAM
+	INFO("VRAM_yx@");
+	CELL_t x=pop();
+	CELL_t y=pop();
+	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
+		push(vram[y][x]);
+	} else {
+		push(0);
+		ERROR("VRAM_yx@ out");
+		write_hex16(x);
+		write_char('x');
+		write_hex16(y);
+	};
+	NEXT;
+}	// }}}
+void f_storeVRAM_yx() {	// {{{ // ( y x c -- ) y row, x column, c character in VRAM
+	INFO("VRAM_yx!");
+	CELL_t c=pop();
+	CELL_t x=pop();
+	CELL_t y=pop();
+	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
+		vram[y][x]=c;
+	} else {
+		ERROR("VRAM_yx! out");
+		write_hex16(x);
+		write_char('x');
+		write_hex16(y);
+		write_char('=');
+		write_hex8(c);
+	};
+	
+	NEXT;
+}	// }}}
 
-void f_CLS() {	// {{{ 
+void f_CLS() {	// {{{
 	INFO("CLS");
 	BIOS_clear(' ', 0b1111);
 	NEXT;
@@ -1693,7 +1726,7 @@ void f_WAIT() {	// {{{ // ( c -- ) bios.wait(c)
 #elif OUTPUT_TARGET == OUTPUT_TARGET_terminal
 
 uint8_t vram[MAX_ROWS][MAX_COLS];
-void f_CLS() {	// {{{ 
+void f_CLS() {	// {{{
 	INFO("CLS");
 	memset(&vram,' ',MAX_ROWS * MAX_COLS);
 	write_str(F("\e[2J\e[1;1H"));
