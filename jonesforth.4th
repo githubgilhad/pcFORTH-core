@@ -724,7 +724,7 @@ dec
 	WORD		( get the name of the value )
 	FIND		( look it up in the dictionary )
 	>DFA		( get a pointer to the first data field (the 'LIT') )
-	4+		( increment to point at the value )
+	4D+		( increment to point at the value )
 	STATE C@ IF	( compiling? )
 		' LIT2 ,	( compile LIT )
 		,		( compile the address of the value )
@@ -738,7 +738,7 @@ dec
 	WORD		( get the name of the value )
 	FIND		( look it up in the dictionary )
 	>DFA		( get a pointer to the first data field (the 'LIT') )
-	4+		( increment to point at the value )
+	4D+		( increment to point at the value )
 	STATE C@ IF	( compiling? )
 		' LIT2 ,	( compile LIT )
 		,		( compile the address of the value )
@@ -753,7 +753,7 @@ dec
 	WORD		( get the name of the value )
 	FIND		( look it up in the dictionary )
 	>DFA		( get a pointer to the first data field (the 'LIT') )
-	4+		( increment to point at the value )
+	4D+		( increment to point at the value )
 	STATE C@ IF	( compiling? )
 		' LIT2 ,	( compile LIT )
 		,		( compile the address of the value )
@@ -767,7 +767,7 @@ dec
 	WORD		( get the name of the value )
 	FIND		( look it up in the dictionary )
 	>DFA		( get a pointer to the first data field (the 'LIT') )
-	4+		( increment to point at the value )
+	4D+		( increment to point at the value )
 	STATE C@ IF	( compiling? )
 		' LIT ,		( compile LIT )
 		,		( compile the address of the value )
@@ -805,12 +805,12 @@ dec
 	'WORD word FIND ?IMMEDIATE' returns true if 'word' is flagged as immediate.
 )
 : ?HIDDEN	(  daddr -- T/F )
-	4+		( skip over the link pointer )
+	4D+		( skip over the link pointer )
 	C@		( get the flags/length byte )
 	F_HIDDEN AND	( mask the F_HIDDEN flag and return it (as a truth value) )
 ;
 : ?IMMEDIATE	(  daddr -- T/F )
-	4+		( skip over the link pointer )
+	4D+		( skip over the link pointer )
 	C@		( get the flags/length byte )
 	F_IMMEDIATE AND	( mask the F_IMMEDIATE flag and return it (as a truth value) )
 ;
@@ -835,6 +835,28 @@ dec
 	REPEAT
 	CR
 ;
+(
+	WORDSP prints all the words defined in the dictionary while paging by 100
+)
+
+: WORDSP		( -- )
+	100 >R
+	LAST D@	( start at LAST dictionary entry )
+	BEGIN
+		?DUP2		( while link pointer is not null )
+		NOTNULL
+	WHILE
+		DUP2 ?HIDDEN NOT IF	( ignore hidden words )
+			DUP2 ID.		( but if not hidden, print the word )
+			SPACE
+			R> 1- DUP IFNOT CR KEY DROP ( drop key ) DROP ( drop zero) 100 THEN >R ( paging )
+		THEN
+		D@		( dereference the link pointer - go to previous word )
+	REPEAT
+	R> DROP ( paging )
+	CR
+;
+
 
 (
 	FORGET ----------------------------------------------------------------------
@@ -1373,8 +1395,8 @@ dec
 ;
 
 : CATCH		( xt -- exn? )
-	S? 4+ >R		( save parameter stack pointer (+4 because of xt) on the return stack )
-	' EXCEPTION-MARKER 4+	( push the address of the RDROP inside EXCEPTION-MARKER ... )
+	S? 4D+ >R		( save parameter stack pointer (+4 because of xt) on the return stack )
+	' EXCEPTION-MARKER 4D+	( push the address of the RDROP inside EXCEPTION-MARKER ... )
 	>R			( ... on to the return stack so it acts like a return address )
 	EXECUTE			( execute the nested function )
 ;
@@ -1383,23 +1405,23 @@ dec
 	?DUP IF			( only act if the exception code <> 0 )
 		R? 			( get return stack pointer )
 		BEGIN
-			DUP R0 4- <		( RSP < R0 )
+			DUP2 R0 4D- <D		( RSP < R0 )
 		WHILE
-			DUP @			( get the return stack entry )
-			' EXCEPTION-MARKER 4+ = IF	( found the EXCEPTION-MARKER on the return stack )
-				4+			( skip the EXCEPTION-MARKER on the return stack )
+			DUP2 @			( get the return stack entry )
+			' EXCEPTION-MARKER 4D+ = IF	( found the EXCEPTION-MARKER on the return stack )
+				4D+			( skip the EXCEPTION-MARKER on the return stack )
 				R!			( restore the return stack pointer )
 
 				( Restore the parameter stack. )
 				DUP DUP DUP		( reserve some working space so the stack for this word
 							  doesn't coincide with the part of the stack being restored )
 				R>			( get the saved parameter stack pointer | n dsp )
-				4-			( reserve space on the stack to store n )
+				4D-			( reserve space on the stack to store n )
 				SWAP OVER		( dsp n dsp )
 				!			( write n on the stack )
 				S! EXIT		( restore the parameter stack pointer, immediately exit )
 			THEN
-			4+
+			4D+
 		REPEAT
 
 		( No matching catch - print a message and restart the INTERPRETer. )
@@ -1425,13 +1447,13 @@ dec
 : PRINT-STACK-TRACE
 	R?				( start at caller of this function )
 	BEGIN
-		DUP R0 4- <		( RSP < R0 )
+		DUP2 R0 4D- <D		( RSP < R0 )
 	WHILE
 		DUP @			( get the return stack entry )
 		CASE
-		' EXCEPTION-MARKER 4+ OF	( is it the exception stack frame? )
+		' EXCEPTION-MARKER 4D+ OF	( is it the exception stack frame? )
 			." CATCH ( DSP="
-			4+ DUP @ U.		( print saved stack pointer )
+			4D+ DUP @ U.		( print saved stack pointer )
 			." ) "
 		ENDOF
 						( default case )
@@ -1441,10 +1463,10 @@ dec
 				DUP2			( dea addr dea )
 				ID.			( print word from dictionary entry )
 				[ 0 CHAR + ] LITERAL EMIT
-				SWAP >DFA 4+ - .	( print offset )
+				SWAP >DFA 4D+ - .	( print offset )
 			THEN
 		ENDCASE
-		4+			( move up the stack )
+		4D+			( move up the stack )
 	REPEAT
 	DROP
 	CR
@@ -1497,8 +1519,8 @@ dec
 		0 HERE D@ C!	( add the ASCII NUL byte )
 		1 HERE +!
 		DROP		( drop the double quote character at the end )
-		DUP		( get the saved address of the length word )
-		HERE D@ SWAP -	( calculate the length )
+		DUP2		( get the saved address of the length word )
+		HERE D@ SWAP2 -D	( calculate the length )
 		4-		( subtract 4 (because we measured from the start of the length word) )
 		SWAP !		( and back-fill the length location )
 		' DROP ,	( compile DROP (to drop the length) )
@@ -1508,11 +1530,11 @@ dec
 			KEY
 			DUP '"' <>
 		WHILE
-			OVER C!		( save next character )
+			OVER21 C!		( save next character )
 			1+		( increment address )
 		REPEAT
 		DROP		( drop the final " character )
-		0 SWAP C!	( store final ASCII NUL )
+		0 SWAP21 C!	( store final ASCII NUL )
 		HERE D@		( push the start address )
 	THEN
 ;

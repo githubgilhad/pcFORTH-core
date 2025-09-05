@@ -82,6 +82,7 @@ VALUE2          	w_VALUE2
 VARIABLE        	w_VARIABLE
 WITHIN          	w_WITHIN
 WORDS           	w_newWORDS
+WORDSP          	w_WORDSP
 Z"              	w_Zquote
 [']             	w_bracketedapostrophe
 [COMPILE]       	w_COMPILE_in_brackets
