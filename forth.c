@@ -419,6 +419,150 @@ CONST2(R_END,B3U32(&Rstck[RSTACK_LEN]))
 void	print_stack() { 	// {{{ just simple debug print
 	for (int8_t p=0;p<stack;p++) {write_char('[');write_hex16(stck[p]);write_char(']');};
 }	// }}}
+void	print_Rstack() { 	// {{{ just simple debug print
+	for (int8_t p=1;p<Rstack;p++) {write_char('<');write_hex32(Rstck[p]);write_char('>');};
+}	// }}}
+#if defined(__PORTABLE_GRAPHIC__)
+#if OUTPUT_TARGET == OUTPUT_TARGET_vram
+extern void BIOS_clear(char c, int col);
+extern void BIOS_set_cursor(uint8_t row, uint8_t col);
+extern uint16_t BIOS_get_key();
+extern void BIOS_wait(unsigned int dt);
+extern uint8_t vram[BIOS_ROWS][BIOS_COLS];
+void f_VRAM_yx() {	// {{{ // ( y x -- daddr ) y row, x column, daddr addr in VRAM
+	INFO("VRAM_yx");
+	CELL_t x=pop();
+	CELL_t y=pop();
+	push2(B3U32(&vram[y][x]));
+	NEXT;
+}	// }}}
+void f_fetchVRAM_yx() {	// {{{ // ( y x -- c ) y row, x column, c character in VRAM
+	INFO("VRAM_yx@");
+	CELL_t x=pop();
+	CELL_t y=pop();
+	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
+		push(vram[y][x]);
+	} else {
+		push(0);
+		ERROR("VRAM_yx@ out");
+		write_hex16(x);
+		write_char('x');
+		write_hex16(y);
+	};
+	NEXT;
+}	// }}}
+void f_storeVRAM_yx() {	// {{{ // ( y x c -- ) y row, x column, c character in VRAM
+	INFO("VRAM_yx!");
+	CELL_t c=pop();
+	CELL_t x=pop();
+	CELL_t y=pop();
+	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
+		vram[y][x]=c;
+	} else {
+		ERROR("VRAM_yx! out");
+		write_hex16(x);
+		write_char('x');
+		write_hex16(y);
+		write_char('=');
+		write_hex8(c);
+	};
+	
+	NEXT;
+}	// }}}
+
+void f_CLS() {	// {{{
+	INFO("CLS");
+	BIOS_clear(' ', 0b11110000);
+	NEXT;
+}	// }}}
+void f_CUR_yx() {	// {{{ // ( y x -- ) move cursor to  y row, x column
+	INFO("CUR_yx");
+	CELL_t x=pop();
+	CELL_t y=pop();
+	BIOS_set_cursor(y,x);
+	NEXT;
+}	// }}}
+void f_KEYpress() {	// {{{ // ( -- c ) ascii of pressed key or 0
+	INFO("KEYpress");
+	push(BIOS_get_key());
+	NEXT;
+}	// }}}
+void f_WAIT() {	// {{{ // ( c -- ) bios.wait(c)
+	INFO("WAIT");
+	BIOS_wait(pop());
+	NEXT;
+}	// }}}
+#elif OUTPUT_TARGET == OUTPUT_TARGET_terminal
+
+uint8_t vram[MAX_ROWS][MAX_COLS];
+void f_CLS() {	// {{{
+	INFO("CLS");
+	memset(&vram,' ',MAX_ROWS * MAX_COLS);
+	write_str(F("\e[2J\e[1;1H"));
+	NEXT;
+}	// }}}
+void f_fetchVRAM_yx() {	// {{{ // ( y x -- c ) y row, x column, c character in VRAM
+	INFO("VRAM_yx@");
+	CELL_t x=pop();
+	CELL_t y=pop();
+	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
+		push(vram[y][x]);
+	} else {
+		push(0);
+		ERROR("VRAM_yx@ out");
+		write_hex16(x);
+		write_char('x');
+		write_hex16(y);
+	};
+	NEXT;
+}	// }}}
+void f_storeVRAM_yx() {	// {{{ // ( y x c -- ) y row, x column, c character in VRAM
+	INFO("VRAM_yx!");
+	CELL_t c=pop();
+	CELL_t x=pop();
+	CELL_t y=pop();
+	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
+		vram[y][x]=c;
+		write_str(F("\e["));
+		write_num8(y+1);
+		write_char(';');
+		write_num8(x+1);
+		write_char('H');
+		write_char(c);
+	} else {
+		ERROR("VRAM_yx! out");
+		write_hex16(x);
+		write_char('x');
+		write_hex16(y);
+		write_char('=');
+		write_hex8(c);
+	};
+	
+	NEXT;
+}	// }}}
+void f_CUR_yx() {	// {{{ // ( y x -- ) move cursor to  y row, x column
+	INFO("CUR_yx");
+	CELL_t x=pop();
+	CELL_t y=pop();
+		write_str(F("\e["));
+		write_num8(y+1);
+		write_char(';');
+		write_num8(x+1);
+		write_char('H');
+	NEXT;
+}	// }}}
+void f_KEYpress() {	// {{{ // ( -- c ) ascii of pressed key or 0
+	INFO("KEYpress");
+	push(read_char());
+	NEXT;
+}	// }}}
+void f_WAIT() {	// {{{ // ( c -- ) bios.wait(c)
+	INFO("WAIT");
+	usleep(20000*pop());
+	NEXT;
+}	// }}}
+#endif
+#endif
 // {{{ dup, plus, ...
 void f_dup(){	// {{{
 	TRACE("DUP");
@@ -1260,7 +1404,14 @@ void f_comma() {	// {{{ take 3B address (2 CELLs) from datastack and put it to H
 void f_dot() { 	 // {{{
 	TRACE(".");
 	CELL_t c=pop();
-	itoa(c, buf, BASE);
+	ltoa(c, buf, BASE);
+	write_str(&buf[0]);
+	NEXT;
+}	// }}}
+void f_dotD() { 	 // {{{
+	TRACE(".D");
+	DOUBLE_t d=pop2();
+	ltoa(d, buf, BASE);
 	write_str(&buf[0]);
 	NEXT;
 }	// }}}
@@ -1653,147 +1804,6 @@ void f_lastbuildinword() {	// {{{ // ( -- h ) last build in word - put its heade
 	push2(B3U32(&w_lastbuildinword_head));
 	NEXT;
 }	// }}}
-#if defined(__PORTABLE_GRAPHIC__)
-#if OUTPUT_TARGET == OUTPUT_TARGET_vram
-extern void BIOS_clear(char c, int col);
-extern void BIOS_set_cursor(uint8_t row, uint8_t col);
-extern uint16_t BIOS_get_key();
-extern void BIOS_wait(unsigned int dt);
-extern uint8_t vram[BIOS_ROWS][BIOS_COLS];
-void f_VRAM_yx() {	// {{{ // ( y x -- daddr ) y row, x column, daddr addr in VRAM
-	INFO("VRAM_yx");
-	CELL_t x=pop();
-	CELL_t y=pop();
-	push2(B3U32(&vram[y][x]));
-	NEXT;
-}	// }}}
-void f_fetchVRAM_yx() {	// {{{ // ( y x -- c ) y row, x column, c character in VRAM
-	INFO("VRAM_yx@");
-	CELL_t x=pop();
-	CELL_t y=pop();
-	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
-		push(vram[y][x]);
-	} else {
-		push(0);
-		ERROR("VRAM_yx@ out");
-		write_hex16(x);
-		write_char('x');
-		write_hex16(y);
-	};
-	NEXT;
-}	// }}}
-void f_storeVRAM_yx() {	// {{{ // ( y x c -- ) y row, x column, c character in VRAM
-	INFO("VRAM_yx!");
-	CELL_t c=pop();
-	CELL_t x=pop();
-	CELL_t y=pop();
-	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
-		vram[y][x]=c;
-	} else {
-		ERROR("VRAM_yx! out");
-		write_hex16(x);
-		write_char('x');
-		write_hex16(y);
-		write_char('=');
-		write_hex8(c);
-	};
-	
-	NEXT;
-}	// }}}
-
-void f_CLS() {	// {{{
-	INFO("CLS");
-	BIOS_clear(' ', 0b1111);
-	NEXT;
-}	// }}}
-void f_CUR_yx() {	// {{{ // ( y x -- ) move cursor to  y row, x column
-	INFO("CUR_yx");
-	CELL_t x=pop();
-	CELL_t y=pop();
-	BIOS_set_cursor(y,x);
-	NEXT;
-}	// }}}
-void f_KEYpress() {	// {{{ // ( -- c ) ascii of pressed key or 0
-	INFO("KEYpress");
-	push(BIOS_get_key());
-	NEXT;
-}	// }}}
-void f_WAIT() {	// {{{ // ( c -- ) bios.wait(c)
-	INFO("WAIT");
-	BIOS_wait(pop());
-	NEXT;
-}	// }}}
-#elif OUTPUT_TARGET == OUTPUT_TARGET_terminal
-
-uint8_t vram[MAX_ROWS][MAX_COLS];
-void f_CLS() {	// {{{
-	INFO("CLS");
-	memset(&vram,' ',MAX_ROWS * MAX_COLS);
-	write_str(F("\e[2J\e[1;1H"));
-	NEXT;
-}	// }}}
-void f_fetchVRAM_yx() {	// {{{ // ( y x -- c ) y row, x column, c character in VRAM
-	INFO("VRAM_yx@");
-	CELL_t x=pop();
-	CELL_t y=pop();
-	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
-		push(vram[y][x]);
-	} else {
-		push(0);
-		ERROR("VRAM_yx@ out");
-		write_hex16(x);
-		write_char('x');
-		write_hex16(y);
-	};
-	NEXT;
-}	// }}}
-void f_storeVRAM_yx() {	// {{{ // ( y x c -- ) y row, x column, c character in VRAM
-	INFO("VRAM_yx!");
-	CELL_t c=pop();
-	CELL_t x=pop();
-	CELL_t y=pop();
-	if( (x<MAX_COLS) && (y<MAX_ROWS)) {
-		vram[y][x]=c;
-		write_str(F("\e["));
-		write_num8(y+1);
-		write_char(';');
-		write_num8(x+1);
-		write_char('H');
-		write_char(c);
-	} else {
-		ERROR("VRAM_yx! out");
-		write_hex16(x);
-		write_char('x');
-		write_hex16(y);
-		write_char('=');
-		write_hex8(c);
-	};
-	
-	NEXT;
-}	// }}}
-void f_CUR_yx() {	// {{{ // ( y x -- ) move cursor to  y row, x column
-	INFO("CUR_yx");
-	CELL_t x=pop();
-	CELL_t y=pop();
-		write_str(F("\e["));
-		write_num8(y+1);
-		write_char(';');
-		write_num8(x+1);
-		write_char('H');
-	NEXT;
-}	// }}}
-void f_KEYpress() {	// {{{ // ( -- c ) ascii of pressed key or 0
-	INFO("KEYpress");
-	push(read_char());
-	NEXT;
-}	// }}}
-void f_WAIT() {	// {{{ // ( c -- ) bios.wait(c)
-	INFO("WAIT");
-	usleep(20000*pop());
-	NEXT;
-}	// }}}
-#endif
-#endif
 void f_interpret(){	 // {{{
 	TRACE("INTERPRET");
 //	write_str(F("\r\n"));
@@ -1802,6 +1812,7 @@ void f_interpret(){	 // {{{
 	DEBUG_DUMP((HERE),("HERE	"));
 	if (stack>1) DEBUG_DUMP(peek2(),("*stack	"));
 	print_stack();
+	print_Rstack();
 	if (STATE==st_executing) {
 		write_str(F(PROMPT));
 	} else {
